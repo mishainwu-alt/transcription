@@ -33,7 +33,7 @@
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold tracking-tight">AI 語音助理 <span class="text-sky-400 font-light">Pro</span></h1>
-                    <p class="text-sm text-slate-400">Monika 專屬工具 (v4.0 終極真．穩健版)</p>
+                    <p class="text-sm text-slate-400">Monika 專屬工具 (v4.1 黑盒透視版)</p>
                 </div>
             </div>
             <button id="settingsBtn" class="p-2 hover:bg-slate-700 rounded-lg transition-colors text-slate-300">
@@ -43,7 +43,7 @@
     </header>
 
     <main class="flex-grow container mx-auto px-6 py-10 max-w-5xl">
-        <!-- Settings Overlay -->
+        <!-- Settings -->
         <div id="settingsOverlay" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-6">
             <div class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl">
                 <h3 class="text-xl font-bold mb-4 text-slate-800">設定 API Key</h3>
@@ -55,7 +55,7 @@
             </div>
         </div>
 
-        <!-- Upload Section -->
+        <!-- Upload -->
         <section id="dropZone" class="bg-white border-2 border-dashed border-slate-300 rounded-3xl p-12 text-center cursor-pointer hover:border-sky-500 transition-all group shadow-sm">
             <input type="file" id="audioInput" class="hidden" accept="audio/*">
             <div class="flex flex-col items-center">
@@ -71,10 +71,10 @@
 
         <div class="mt-8 flex flex-col items-center">
             <button id="transcribeBtn" disabled class="bg-sky-600 text-white px-10 py-4 rounded-2xl font-bold text-lg disabled:bg-slate-300 shadow-xl transition-all active:scale-95">啟動 AI 助理產出報告</button>
-            <div id="statusLabel" class="mt-4 text-sky-600 text-sm font-medium animate-pulse hidden text-center">指令準備中...</div>
+            <div id="statusLabel" class="mt-4 text-sky-600 text-sm font-medium animate-pulse hidden text-center">等待指令中...</div>
         </div>
 
-        <!-- Results Section -->
+        <!-- Results -->
         <div id="resultSection" class="mt-12 hidden space-y-8">
             <div class="flex justify-between items-center">
                 <h2 class="text-2xl font-bold text-slate-800">轉換結果</h2>
@@ -96,7 +96,10 @@
         <!-- Debug Console -->
         <div id="debugArea" class="mt-12 pt-8 border-t border-slate-200">
             <div class="flex justify-between items-center mb-2">
-                <span class="text-xs text-slate-400 font-bold tracking-widest uppercase">系統除錯終端 (DEBUG CONSOLE)</span>
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs text-slate-400 font-bold tracking-widest uppercase">系統除錯終端</span>
+                    <button id="checkModelsBtn" class="text-[10px] bg-sky-100 text-sky-600 px-2 py-1 rounded hover:bg-sky-200 transition-colors">🔍 檢查可用模型</button>
+                </div>
                 <button id="copyLogBtn" class="text-[10px] bg-slate-200 text-slate-600 px-3 py-1 rounded-lg hover:bg-slate-300 transition-colors">複製錯誤日誌</button>
             </div>
             <div id="debugConsole" class="debug-console">等待 Monika 下達指令...</div>
@@ -104,8 +107,8 @@
     </main>
 
     <script>
-        // 設定模型與 API：固定使用 v1beta 以確保大檔案上傳功能
-        const MODEL_NAME = "gemini-1.5-flash"; 
+        // 設定模型與 API
+        let CURRENT_MODEL = "gemini-1.5-flash"; 
         const API_VERSION = "v1beta";
         const BASE_URL = "https://generativelanguage.googleapis.com";
 
@@ -125,7 +128,8 @@
             debugConsole: document.getElementById('debugConsole'),
             copyLogBtn: document.getElementById('copyLogBtn'),
             exportBtn: document.getElementById('exportBtn'),
-            dropZone: document.getElementById('dropZone')
+            dropZone: document.getElementById('dropZone'),
+            checkModelsBtn: document.getElementById('checkModelsBtn')
         };
 
         let selectedFile = null;
@@ -147,6 +151,30 @@
             document.execCommand('copy');
             document.body.removeChild(temp);
             log("✅ 日誌已複製！");
+        };
+
+        async function listAvailableModels(key) {
+            log("🔍 正在掃描您的 API Key 支援的所有模型...");
+            try {
+                const res = await fetch(`${BASE_URL}/${API_VERSION}/models?key=${encodeURIComponent(key)}`);
+                const data = await res.json();
+                if (data.models) {
+                    const names = data.models.map(m => m.name.replace("models/", ""));
+                    log("📋 可用大腦清單：" + names.join(", "));
+                    return names;
+                }
+                log("❌ 無法取得清單，回應格式異常。");
+                return [];
+            } catch (e) {
+                log("❌ 查詢失敗：" + e.message);
+                return [];
+            }
+        }
+
+        elements.checkModelsBtn.onclick = () => {
+            const key = getSavedKey();
+            if (!key) { alert("請先設定 API Key"); return; }
+            listAvailableModels(key);
         };
 
         function getSavedKey() { return localStorage.getItem('gemini_api_key') || ""; }
@@ -178,46 +206,28 @@
             try {
                 // 1. 初始化上傳通道
                 log("1️⃣ 建立雲端檔案通道...");
-                elements.statusLabel.textContent = "正在向雲端預定通道...";
+                elements.statusLabel.textContent = "正在聯絡雲端大腦...";
                 
                 const uploadInit = await fetch(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'X-Goog-Upload-Protocol': 'resumable',
-                        'X-Goog-Upload-Command': 'start',
-                        'X-Goog-Upload-Header-Content-Length': file.size,
-                        'X-Goog-Upload-Header-Content-Type': file.type
-                    },
-                    body: JSON.stringify({ file: { display_name: `m_file_${Date.now()}` } })
+                    headers: { 'Content-Type': 'application/json', 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'X-Goog-Upload-Header-Content-Length': file.size, 'X-Goog-Upload-Header-Content-Type': file.type },
+                    body: JSON.stringify({ file: { display_name: `monika_file_${Date.now()}` } })
                 });
 
-                if (!uploadInit.ok) {
-                    const errTxt = await uploadInit.text();
-                    log(`❌ 通道初始化失敗 (HTTP ${uploadInit.status}): ${errTxt}`);
-                    throw new Error(`連線失敗 (${uploadInit.status})`);
-                }
+                if (!uploadInit.ok) throw new Error(`通道初始化失敗 (${uploadInit.status})`);
                 const uploadUrl = uploadInit.headers.get('X-Goog-Upload-URL');
                 log("✅ 通道建立成功。");
 
                 // 2. 傳送數據
                 log("2️⃣ 搬運錄音數據中...");
-                elements.statusLabel.textContent = "音軌傳送中，請保持網路穩定...";
+                elements.statusLabel.textContent = "音軌搬運中，請不要斷開網路...";
                 const uploadRes = await fetch(uploadUrl, {
                     method: 'PUT',
-                    headers: { 
-                        'X-Goog-Upload-Protocol': 'resumable',
-                        'X-Goog-Upload-Command': 'upload, finalize',
-                        'X-Goog-Upload-Offset': '0'
-                    },
+                    headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'upload, finalize', 'X-Goog-Upload-Offset': '0' },
                     body: file
                 });
                 
-                if (!uploadRes.ok) {
-                    const resTxt = await uploadRes.text();
-                    log(`❌ 數據傳送失敗 (HTTP ${uploadRes.status}): ${resTxt}`);
-                    throw new Error(`傳輸失敗 (${uploadRes.status})`);
-                }
+                if (!uploadRes.ok) throw new Error(`數據傳送失敗 (${uploadRes.status})`);
                 const uploadData = await uploadRes.json();
                 const fileUri = uploadData.file.uri;
                 const resourceName = uploadData.file.name;
@@ -225,7 +235,7 @@
 
                 // 3. 等待雲端解析
                 log("3️⃣ AI 正在閱讀錄音檔內容...");
-                elements.statusLabel.textContent = "AI 深度理解音軌語境中...";
+                elements.statusLabel.textContent = "AI 深度解析音軌中...";
                 while (true) {
                     await new Promise(r => setTimeout(r, 4000));
                     const check = await fetch(`${BASE_URL}/${API_VERSION}/${resourceName}?key=${encodedKey}`);
@@ -235,21 +245,38 @@
                     if (status.state === "FAILED") throw new Error("音檔雲端解析失敗。");
                 }
 
-                // 4. 生成內容 (強制僅使用 v1beta 以支援所有欄位)
+                // 4. 生成內容 (帶自動適配機制)
                 log("4️⃣ AI 正在撰寫正式報告...");
-                elements.statusLabel.textContent = "AI 整理摘要與行動清單中...";
-                const prompt = "妳是 Monika 的專屬 AI 秘書，擅長製作精準的會議紀錄。請分析錄音內容，產出繁體中文的：1.重點摘要與行動清單 2.逐字稿。內容請務必專業、優雅，去除冗言贅字。回傳格式必須為 JSON：{ \"summary\": \"內容\", \"transcript\": \"內容\" }。請絕對禁止使用簡體中文。";
+                elements.statusLabel.textContent = "AI 整理摘要與逐字稿中...";
+                const prompt = "妳是 Monika 的專屬 AI 秘書，擅長製作精準的會議紀錄。請分析錄音內容，產出繁體中文的：1.重點摘要與決策清單 2.逐字稿。回傳格式必須為 JSON：{ \"summary\": \"內容\", \"transcript\": \"內容\" }。請絕對禁止使用簡體中文。";
                 
-                const payload = {
+                const getPayload = () => ({
                     contents: [{ parts: [{ text: prompt }, { fileData: { mimeType: file.type, fileUri: fileUri } }] }],
                     generationConfig: { responseMimeType: "application/json", temperature: 0.1 }
-                };
+                });
 
-                const response = await fetch(`${BASE_URL}/${API_VERSION}/models/${MODEL_NAME}:generateContent?key=${encodedKey}`, {
+                // 第一回合：嘗試標準模型
+                let response = await fetch(`${BASE_URL}/${API_VERSION}/models/${CURRENT_MODEL}:generateContent?key=${encodedKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(getPayload())
                 });
+
+                // 自動救回機制：若 404 找不到模型，自動探索可用模型並替換
+                if (response.status === 404) {
+                    log(`💡 找不到大腦 ${CURRENT_MODEL}，啟動自動適配機制...`);
+                    const models = await listAvailableModels(key);
+                    const alternative = models.find(m => m.includes("flash") && !m.includes("tuning")) || models[0];
+                    if (alternative && alternative !== CURRENT_MODEL) {
+                        log(`🚀 發現替代大腦：${alternative}，重新發送指令...`);
+                        CURRENT_MODEL = alternative;
+                        response = await fetch(`${BASE_URL}/${API_VERSION}/models/${CURRENT_MODEL}:generateContent?key=${encodedKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(getPayload())
+                        });
+                    }
+                }
 
                 if (!response.ok) {
                     const err = await response.text();
@@ -269,7 +296,7 @@
 
         elements.transcribeBtn.onclick = async () => {
             const key = getSavedKey();
-            if (!key) { alert("請先點擊右上角齒輪設定 API Key"); return; }
+            if (!key) { alert("請先設定 API Key"); return; }
             
             elements.transcribeBtn.disabled = true;
             elements.statusLabel.classList.remove('hidden', 'text-red-500');
@@ -284,7 +311,7 @@
                 elements.resultSection.classList.remove('hidden');
                 elements.statusLabel.classList.add('hidden');
             } catch (err) {
-                elements.statusLabel.textContent = `❌ 處理失敗，請點選複製日誌按鈕。`;
+                elements.statusLabel.textContent = `❌ 處理失敗，請點選複製日誌。`;
                 elements.statusLabel.classList.add('text-red-500');
             } finally {
                 elements.transcribeBtn.disabled = false;
