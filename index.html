@@ -33,7 +33,7 @@
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold tracking-tight">AI 語音助理 <span class="text-sky-400 font-light">Pro</span></h1>
-                    <p class="text-sm text-slate-400">Monika 專屬 AI 語音紀錄工具 (v3.0 穩定版)</p>
+                    <p class="text-sm text-slate-400">Monika 專屬 AI 語音紀錄工具 (v3.1 救援版)</p>
                 </div>
             </div>
             <div class="flex items-center space-x-4">
@@ -56,7 +56,7 @@
             <div class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl">
                 <h3 class="text-xl font-bold text-slate-800 mb-4">設定 API Key</h3>
                 <input type="password" id="apiKeyInput" placeholder="在此貼上您的 API Key..." class="w-full px-4 py-3 border border-slate-200 rounded-xl mb-4 focus:ring-2 focus:ring-sky-500 outline-none">
-                <p class="text-xs text-slate-400 mb-6">若先前 F5 後仍報錯，建議清除 Key 重新貼上一次並儲存。</p>
+                <p class="text-xs text-slate-500 mb-6 font-medium">✨ 小 Ge 提示：若「Failed to fetch」，請確認網路穩定或換一組新的 API Key。</p>
                 <div class="flex space-x-3">
                     <button id="saveKeyBtn" class="flex-1 bg-sky-600 text-white py-3 rounded-xl font-bold hover:bg-sky-700 transition-colors">儲存設定</button>
                     <button id="closeSettingsBtn" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors">關閉</button>
@@ -73,7 +73,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                     </svg>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-700 mb-2">點擊或拖放會議音檔</h2>
+                <h2 class="text-2xl font-bold text-slate-700 mb-2 text-center">點擊或拖放錄音檔案</h2>
                 <div id="fileInfo" class="hidden flex flex-col items-center mt-4">
                     <span id="fileNameDisplay" class="inline-flex items-center px-4 py-2 bg-sky-100 text-sky-700 rounded-full text-sm font-bold"></span>
                     <div id="uploadProgressContainer" class="hidden w-64 h-2 bg-slate-100 rounded-full mt-4 overflow-hidden">
@@ -87,7 +87,7 @@
         <div class="mt-8 flex justify-center">
             <button id="transcribeBtn" disabled class="bg-sky-600 text-white px-12 py-5 rounded-2xl font-bold text-lg shadow-2xl shadow-sky-200 hover:bg-sky-700 disabled:bg-slate-300 disabled:shadow-none transition-all flex items-center space-x-3 transform active:scale-95">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                <span>生成完整會議報告</span>
+                <span>生成會議報告</span>
             </button>
         </div>
 
@@ -162,7 +162,7 @@
         closeSettingsBtn.onclick = () => settingsOverlay.classList.add('hidden');
         saveKeyBtn.onclick = () => {
             localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
-            showToast('✅ API Key 已更新');
+            showToast('✅ API Key 已更新並儲存');
             settingsOverlay.classList.add('hidden');
         };
 
@@ -185,74 +185,89 @@
         }
 
         async function runTranscription(file, key) {
-            // 1. 檔案上傳流程 (File API)
-            statusLabel.textContent = "傳送檔案中...";
-            uploadProgressContainer.classList.remove('hidden');
-            uploadProgressBar.style.width = "10%";
-            
-            const safeName = "m_file_" + Date.now();
-            const initRes = await fetch(`${BASE_API}/upload/files?key=${key}`, {
-                method: 'POST',
-                headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
-                body: JSON.stringify({ file: { display_name: safeName } })
-            });
-            
-            if (!initRes.ok) throw new Error("API Key 認證失敗，請重新輸入正確的 Key。");
-            const uploadUrl = initRes.headers.get('X-Goog-Upload-URL');
-
-            const uploadRes = await fetch(uploadUrl, {
-                method: 'PUT',
-                headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'upload, finalize', 'Content-Length': file.size },
-                body: file
-            });
-
-            const uploadData = await uploadRes.json();
-            const fileUri = uploadData.file.uri;
-            const fileName = uploadData.file.name;
-            uploadProgressBar.style.width = "50%";
-
-            // 2. 等待狀態
-            statusLabel.textContent = "雲端處理中...";
-            while (true) {
-                await new Promise(r => setTimeout(r, 4000));
-                const statusCheck = await fetch(`${BASE_API}/${fileName}?key=${key}`);
-                const statusData = await statusCheck.json();
-                if (statusData.state === "ACTIVE") break;
-                if (statusData.state === "FAILED") throw new Error('檔案讀取失敗。');
-            }
-            uploadProgressBar.style.width = "80%";
-
-            // 3. 混合式生成 (將指令直接塞入 user message 避開 systemInstruction 錯誤)
-            statusLabel.textContent = "AI 正在生成繁體中文報告...";
-            const payload = {
-                contents: [{ 
-                    role: "user",
-                    parts: [
-                        { text: "妳是 Monika 的 AI 專屬秘書，擅長製作專業的會議紀錄。請針對以下錄音內容，產出繁體中文的『重點摘要與決策建議』以及『去除贅字的完整逐字稿』。妳必須回傳 JSON 格式：{ 'summary': '內容', 'transcript': '內容' }。請絕對禁止使用簡體中文。" },
-                        { fileData: { mimeType: file.type, fileUri: fileUri } }
-                    ]
-                }],
-                generationConfig: { 
-                    responseMimeType: "application/json", 
-                    temperature: 0.1 
+            try {
+                // 1. 檔案上傳流程 (使用更穩健的初始化方式)
+                statusLabel.textContent = "正在連線雲端...";
+                uploadProgressContainer.classList.remove('hidden');
+                uploadProgressBar.style.width = "5%";
+                
+                const safeName = "monika_session_" + Date.now();
+                const initRes = await fetch(`${BASE_API}/upload/files?key=${key}`, {
+                    method: 'POST',
+                    headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file: { display_name: safeName } })
+                });
+                
+                if (!initRes.ok) {
+                    const errDetail = await initRes.json().catch(() => ({}));
+                    throw new Error(errDetail.error?.message || "無法啟動雲端連線，請檢查 API Key。");
                 }
-            };
+                const uploadUrl = initRes.headers.get('X-Goog-Upload-URL');
 
-            const response = await fetch(`${BASE_API}/models/${MODEL_NAME}:generateContent?key=${key}`, {
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+                statusLabel.textContent = "上傳錄音檔案中...";
+                const uploadRes = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'upload, finalize', 'Content-Length': file.size },
+                    body: file
+                });
 
-            if (!response.ok) {
-                const err = await response.json().catch(() => ({}));
-                throw new Error(`AI 生成失敗: ${err.error?.message || "伺服器忙碌"}`);
+                if (!uploadRes.ok) throw new Error('檔案上傳中斷，請確認網路連線。');
+                const uploadData = await uploadRes.json();
+                const fileUri = uploadData.file.uri;
+                const fileName = uploadData.file.name;
+                uploadProgressBar.style.width = "50%";
+
+                // 2. 等待雲端解析
+                statusLabel.textContent = "雲端大腦分析音軌中...";
+                let attempts = 0;
+                while (attempts < 60) {
+                    await new Promise(r => setTimeout(r, 4000));
+                    const statusCheck = await fetch(`${BASE_API}/${fileName}?key=${key}`);
+                    const statusData = await statusCheck.json();
+                    if (statusData.state === "ACTIVE") break;
+                    if (statusData.state === "FAILED") throw new Error('檔案讀取失敗，可能是格式不支援。');
+                    attempts++;
+                }
+                uploadProgressBar.style.width = "80%";
+
+                // 3. 生成報告 (改進 payload 結構以提升相容性)
+                statusLabel.textContent = "AI 正在撰寫繁體中文報告...";
+                const promptText = "妳是 Monika 的 AI 專屬秘書，擅長製作專業的會議紀錄。請針對錄音內容，產出繁體中文的『重點摘要與決策建議』以及『去除贅字的完整逐字稿』。內容必須包含對話主題、結論與行動清單。妳必須回傳 JSON 格式：{ 'summary': '內容', 'transcript': '內容' }。請絕對禁止使用簡體中文或中國大陸用語。";
+
+                const payload = {
+                    contents: [{ 
+                        parts: [
+                            { text: promptText },
+                            { fileData: { mimeType: file.type, fileUri: fileUri } }
+                        ]
+                    }],
+                    generationConfig: { 
+                        responseMimeType: "application/json", 
+                        temperature: 0.2
+                    }
+                };
+
+                const response = await fetch(`${BASE_API}/models/${MODEL_NAME}:generateContent?key=${key}`, {
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(`AI 生成失敗：${err.error?.message || "伺服器忙碌中，請稍後再試"}`);
+                }
+
+                const data = await response.json();
+                const textResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!textResult) throw new Error("AI 未能產出有效內容。");
+                
+                uploadProgressBar.style.width = "100%";
+                return JSON.parse(textResult);
+            } catch (e) {
+                console.error("Transcription Error:", e);
+                throw e;
             }
-
-            const data = await response.json();
-            const textResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            uploadProgressBar.style.width = "100%";
-            return JSON.parse(textResult);
         }
 
         transcribeBtn.onclick = async () => {
@@ -265,7 +280,7 @@
             resultSection.classList.remove('hidden');
             exportBtn.classList.add('hidden');
             summaryContent.innerHTML = `<div class="h-4 w-full loading-shimmer rounded mb-2"></div><div class="h-4 w-2/3 loading-shimmer rounded"></div>`;
-            transcriptContainer.textContent = "初始化旗艦版處理引擎...";
+            transcriptContainer.textContent = "初始化中...";
 
             try {
                 const data = await runTranscription(selectedFile, key);
@@ -275,14 +290,14 @@
                 exportBtn.classList.remove('hidden');
                 showToast('✨ 會議報告產出完成！');
             } catch (err) {
-                console.error(err);
-                transcriptContainer.innerHTML = `<div class="bg-red-50 p-6 rounded-2xl border border-red-100 text-red-600 font-medium text-center">
-                    <p class="text-lg mb-2">❌ 處理發生障礙</p>
-                    <p class="text-sm opacity-80">${err.message}</p>
-                    <p class="mt-4 text-xs">建議做法：請確認 API Key 權限，並重新整理網頁後再次上傳。</p>
+                const errorMsg = err.message || "發生未知網路錯誤";
+                transcriptContainer.innerHTML = `<div class="bg-red-50 p-8 rounded-2xl border border-red-100 text-red-600 text-center">
+                    <p class="text-xl font-bold mb-3">❌ 處理發生障礙</p>
+                    <p class="text-sm opacity-90 mb-4">${errorMsg}</p>
+                    <p class="text-xs">建議：請檢查網路連線，並點擊右上角重新設定 API Key 後，重新整理網頁再試一次。</p>
                 </div>`;
                 summaryContent.innerHTML = `<span class="text-red-400">目前無法產出摘要</span>`;
-                showToast('❌ 處理失敗，詳情請看說明');
+                showToast('❌ 處理失敗，請查看下方說明');
             } finally {
                 statusIndicator.classList.add('hidden');
                 uploadProgressContainer.classList.add('hidden');
@@ -295,9 +310,13 @@
             const docContent = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
                 <head><meta charset='utf-8'></head><body>
                 <h1 style="color: #0284C7;">Monika 的 AI 秘書報告</h1>
-                <div style="background: #FFFBEB; padding: 15px; border-radius: 8px;">${generatedData.summary.replace(/\n/g, '<br>')}</div>
+                <p>產出日期：${new Date().toLocaleString()}</p>
+                <div style="background: #FFFBEB; padding: 15px; border-radius: 8px; border: 1px solid #FDE68A;">
+                    <h3 style="margin-top:0;">重點摘要</h3>
+                    ${generatedData.summary.replace(/\n/g, '<br>')}
+                </div>
                 <br>
-                <h2>逐字稿全文</h2><p style="white-space: pre-wrap;">${generatedData.transcript}</p>
+                <h2>完整逐字稿</h2><p style="white-space: pre-wrap;">${generatedData.transcript}</p>
                 </body></html>`;
             const blob = new Blob(['\ufeff', docContent], { type: 'application/msword' });
             const link = document.createElement('a');
