@@ -17,7 +17,7 @@
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         .transcript-container::-webkit-scrollbar { width: 6px; }
         .transcript-container::-webkit-scrollbar-thumb { background-color: #CBD5E1; border-radius: 10px; }
-        .debug-console { background: #1E293B; color: #38BDF8; font-family: monospace; font-size: 11px; padding: 12px; border-radius: 12px; margin-top: 20px; max-height: 200px; overflow-y: auto; border: 1px solid #334155; }
+        .debug-console { background: #1E293B; color: #38BDF8; font-family: monospace; font-size: 11px; padding: 12px; border-radius: 12px; margin-top: 20px; max-height: 200px; overflow-y: auto; border: 1px solid #334155; line-height: 1.6; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -33,7 +33,7 @@
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold tracking-tight">AI 語音助理 <span class="text-sky-400 font-light">Pro</span></h1>
-                    <p class="text-sm text-slate-400">Monika 專屬工具 (v3.5 終極修復版)</p>
+                    <p class="text-sm text-slate-400">Monika 專屬工具 (v3.7 傳輸力場加強版)</p>
                 </div>
             </div>
             <button id="settingsBtn" class="p-2 hover:bg-slate-700 rounded-lg transition-colors text-slate-300">
@@ -62,7 +62,7 @@
                 <div class="w-16 h-16 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-sky-50 group-hover:text-sky-600 transition-all">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
                 </div>
-                <h2 class="text-xl font-bold text-slate-700">點擊選擇或拖放會議錄音</h2>
+                <h2 class="text-xl font-bold text-slate-700 text-center">點擊選擇或拖放會議音檔</h2>
                 <div id="fileInfo" class="hidden mt-4">
                     <span id="fileNameDisplay" class="px-4 py-2 bg-sky-100 text-sky-700 rounded-full text-sm font-bold"></span>
                 </div>
@@ -71,14 +71,14 @@
 
         <div class="mt-8 flex flex-col items-center">
             <button id="transcribeBtn" disabled class="bg-sky-600 text-white px-10 py-4 rounded-2xl font-bold text-lg disabled:bg-slate-300 shadow-xl transition-all active:scale-95">開始生成會議紀錄</button>
-            <div id="statusLabel" class="mt-4 text-sky-600 text-sm font-medium animate-pulse hidden">引擎預熱中...</div>
+            <div id="statusLabel" class="mt-4 text-sky-600 text-sm font-medium animate-pulse hidden text-center">引擎運行中...</div>
         </div>
 
         <!-- Results Section -->
         <div id="resultSection" class="mt-12 hidden space-y-8">
             <div class="flex justify-between items-center">
                 <h2 class="text-2xl font-bold text-slate-800">產出成果</h2>
-                <button id="exportBtn" class="bg-green-600 text-white px-5 py-2 rounded-xl text-sm font-bold shadow-lg hover:bg-green-700 transition-all">匯出為 Word 文件</button>
+                <button id="exportBtn" class="bg-green-600 text-white px-5 py-2 rounded-xl text-sm font-bold shadow-lg hover:bg-green-700 transition-all text-center">匯出為 Word 文件</button>
             </div>
             <div class="bg-amber-50 p-8 rounded-3xl border border-amber-100 shadow-sm">
                 <h3 class="font-bold text-amber-800 mb-4 flex items-center">
@@ -93,10 +93,10 @@
             </div>
         </div>
 
-        <!-- Advanced Debug Console -->
+        <!-- Debug Console -->
         <div id="debugArea" class="mt-12 pt-8 border-t border-slate-200">
             <div class="flex justify-between items-center mb-2">
-                <span class="text-xs text-slate-400 font-bold tracking-widest uppercase">系統除錯終端 (Debug Console)</span>
+                <span class="text-xs text-slate-400 font-bold tracking-widest uppercase">系統除錯終端 (DEBUG CONSOLE)</span>
                 <button id="copyLogBtn" class="text-[10px] bg-slate-200 text-slate-600 px-3 py-1 rounded-lg hover:bg-slate-300 transition-colors">複製錯誤報告</button>
             </div>
             <div id="debugConsole" class="debug-console">等待 Monika 下達指令...</div>
@@ -105,7 +105,7 @@
 
     <script>
         // 設定模型與 API 通道
-        const MODEL_NAME = "gemini-1.5-flash";
+        const MODEL_NAME = "gemini-1.5-flash-latest";
         const API_VERSION = "v1beta";
         const BASE_URL = "https://generativelanguage.googleapis.com";
 
@@ -135,7 +135,7 @@
             const time = new Date().toLocaleTimeString();
             elements.debugConsole.innerHTML += `<div>[${time}] ${msg}</div>`;
             elements.debugConsole.scrollTop = elements.debugConsole.scrollHeight;
-            console.log(`[Assistant Log] ${msg}`);
+            console.log(`[System Log] ${msg}`);
         }
 
         elements.copyLogBtn.onclick = () => {
@@ -146,15 +146,12 @@
             temp.select();
             document.execCommand('copy');
             document.body.removeChild(temp);
-            log("✅ 日誌已複製！請貼給小 Ge 診斷。");
+            log("✅ 錯誤日誌已複製到剪貼簿。");
         };
 
         function getSavedKey() { return localStorage.getItem('gemini_api_key') || ""; }
 
-        elements.settingsBtn.onclick = () => { 
-            elements.apiKeyInput.value = getSavedKey(); 
-            elements.settingsOverlay.classList.remove('hidden'); 
-        };
+        elements.settingsBtn.onclick = () => { elements.apiKeyInput.value = getSavedKey(); elements.settingsOverlay.classList.remove('hidden'); };
         elements.closeSettingsBtn.onclick = () => elements.settingsOverlay.classList.add('hidden');
         elements.saveKeyBtn.onclick = () => {
             localStorage.setItem('gemini_api_key', elements.apiKeyInput.value.trim());
@@ -170,7 +167,7 @@
                 elements.fileNameDisplay.textContent = `${file.name} (${(file.size/1024/1024).toFixed(1)}MB)`;
                 document.getElementById('fileInfo').classList.remove('hidden');
                 elements.transcribeBtn.disabled = false;
-                log(`📁 檔案已就緒: ${file.name}`);
+                log(`📁 檔案已就緒：${file.name}`);
             }
         };
 
@@ -179,9 +176,9 @@
             const encodedKey = encodeURIComponent(key.trim());
             
             try {
-                // 步驟 1: 初始化上傳 (Resumable Upload)
+                // 1. 初始化上傳通道
                 log("1️⃣ 嘗試建立雲端通道...");
-                elements.statusLabel.textContent = "連線初始化中...";
+                elements.statusLabel.textContent = "正在向雲端申請傳輸通道...";
                 
                 const uploadInit = await fetch(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
                     method: 'POST',
@@ -192,68 +189,72 @@
                         'X-Goog-Upload-Header-Content-Length': file.size,
                         'X-Goog-Upload-Header-Content-Type': file.type
                     },
-                    body: JSON.stringify({ file: { display_name: `monika_session_${Date.now()}` } })
+                    body: JSON.stringify({ file: { display_name: `monika_${Date.now()}` } })
                 });
 
                 if (!uploadInit.ok) {
                     const errorTxt = await uploadInit.text();
-                    log(`❌ 初始化失敗 (${uploadInit.status}): ${errorTxt}`);
-                    throw new Error("無法啟動雲端連線，請檢查 API Key 權限。");
+                    log(`❌ 通道建立失敗 (HTTP ${uploadInit.status}): ${errorTxt}`);
+                    throw new Error(`通道初始化失敗 (${uploadInit.status})`);
                 }
                 const uploadUrl = uploadInit.headers.get('X-Goog-Upload-URL');
                 log("✅ 通道已建立。");
 
-                // 步驟 2: 傳送數據
+                // 2. 傳送音訊數據
                 log("2️⃣ 正在搬運音訊數據...");
-                elements.statusLabel.textContent = "數據傳送中...";
+                elements.statusLabel.textContent = "數據搬運中，請不要關閉視窗...";
+                
+                // 注意：移除手動 Content-Length 標頭，讓瀏覽器 fetch 自動處理，避免報錯
                 const uploadRes = await fetch(uploadUrl, {
                     method: 'PUT',
                     headers: { 
                         'X-Goog-Upload-Protocol': 'resumable',
                         'X-Goog-Upload-Command': 'upload, finalize',
-                        'Content-Length': file.size 
+                        'X-Goog-Upload-Offset': '0'
                     },
                     body: file
                 });
                 
-                if (!uploadRes.ok) throw new Error("數據傳送中斷。");
+                if (!uploadRes.ok) {
+                    const resTxt = await uploadRes.text();
+                    log(`❌ 數據搬運失敗 (HTTP ${uploadRes.status}): ${resTxt}`);
+                    throw new Error(`上傳數據失敗 (${uploadRes.status})`);
+                }
                 const uploadData = await uploadRes.json();
                 const fileUri = uploadData.file.uri;
                 const resourceName = uploadData.file.name;
-                log(`✅ 搬運完成！雲端位置: ${fileUri}`);
+                log(`✅ 搬運完成！雲端位置：${fileUri}`);
 
-                // 步驟 3: 等待解析
-                log("3️⃣ AI 正在閱讀錄音檔內容...");
-                elements.statusLabel.textContent = "AI 深度解析中...";
+                // 3. 等待雲端解析
+                log("3️⃣ AI 正在閱讀並分析音軌...");
+                elements.statusLabel.textContent = "雲端大腦正在解析音訊格式...";
                 while (true) {
                     await new Promise(r => setTimeout(r, 4000));
                     const check = await fetch(`${BASE_URL}/${API_VERSION}/${resourceName}?key=${encodedKey}`);
                     const status = await check.json();
-                    log(`⏳ 目前狀態: ${status.state}`);
+                    log(`⏳ 目前狀態：${status.state}`);
                     if (status.state === "ACTIVE") break;
-                    if (status.state === "FAILED") throw new Error("錄音檔解析失敗。");
+                    if (status.state === "FAILED") throw new Error("音檔雲端解析失敗。");
                 }
 
-                // 步驟 4: 生成內容 (帶自動版本 fallback 機制)
-                log("4️⃣ AI 正在撰寫報告...");
-                elements.statusLabel.textContent = "AI 撰稿與整理中...";
-                const prompt = "妳是 Monika 的專屬 AI 秘書。請分析這段錄音，並用專業的繁體中文產出：1.重點摘要與決策清單 2.逐字稿。回傳格式必須為 JSON：{ \"summary\": \"內容\", \"transcript\": \"內容\" }。絕對禁止簡體。";
+                // 4. 生成內容
+                log("4️⃣ AI 正在撰寫正式報告...");
+                elements.statusLabel.textContent = "AI 整理摘要與逐字稿中...";
+                const prompt = "妳是 Monika 的專屬 AI 秘書，擅長製作專業的會議紀錄。請針對錄音內容產出繁體中文的：1.重點摘要與決策清單 2.逐字稿。格式必須為 JSON：{ \"summary\": \"內容\", \"transcript\": \"內容\" }。絕對禁止簡體中文。內容請去除贅字，語氣要專業優雅。";
                 
                 const payload = {
                     contents: [{ parts: [{ text: prompt }, { fileData: { mimeType: file.type, fileUri: fileUri } }] }],
                     generationConfig: { responseMimeType: "application/json", temperature: 0.1 }
                 };
 
-                // 先試 v1beta
                 let response = await fetch(`${BASE_URL}/${API_VERSION}/models/${MODEL_NAME}:generateContent?key=${encodedKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
-                // 若失敗試 v1
                 if (!response.ok) {
-                    log("💡 v1beta 繁忙，切換至 v1 引擎...");
+                    log(`💡 引擎負載中 (HTTP ${response.status})，嘗試切換備援引擎...`);
                     response = await fetch(`${BASE_URL}/v1/models/${MODEL_NAME}:generateContent?key=${encodedKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -263,19 +264,19 @@
 
                 if (!response.ok) {
                     const err = await response.text();
-                    log(`❌ 生成失敗: ${err}`);
-                    throw new Error(`AI 生成中斷 (${response.status})`);
+                    log(`❌ 生成失敗 (HTTP ${response.status}): ${err}`);
+                    throw new Error(`AI 寫稿失敗 (${response.status})`);
                 }
 
                 const result = await response.json();
-                log("🎉 報告產出完成！");
+                log("🎉 任務成功完成！Monika 的報告已備妥。");
                 return JSON.parse(result.candidates[0].content.parts[0].text);
 
             } catch (e) {
-                if (e.message === "Failed to fetch") {
-                    log("🛑 網路被攔截！這通常是 AdBlock 或公司防火牆導致。");
+                if (e.message.includes("fetch")) {
+                    log("🛑 通訊遭阻斷！請確認瀏覽器安全等級，或嘗試關閉所有外掛後重新整理。");
                 }
-                log(`🛑 [嚴重錯誤] ${e.message}`);
+                log(`🛑 [發生錯誤] ${e.message}`);
                 throw e;
             }
         }
@@ -287,7 +288,7 @@
             elements.transcribeBtn.disabled = true;
             elements.statusLabel.classList.remove('hidden', 'text-red-500');
             elements.resultSection.classList.add('hidden');
-            elements.statusLabel.textContent = "啟動旗艦處理引擎...";
+            elements.statusLabel.textContent = "正在聯絡雲端秘書...";
             
             try {
                 const data = await startTranscription(selectedFile, key);
@@ -297,7 +298,7 @@
                 elements.resultSection.classList.remove('hidden');
                 elements.statusLabel.classList.add('hidden');
             } catch (err) {
-                elements.statusLabel.textContent = `❌ 處理失敗，請查看下方日誌。`;
+                elements.statusLabel.textContent = `❌ 處理失敗，請複製下方日誌貼給小 Ge。`;
                 elements.statusLabel.classList.add('text-red-500');
             } finally {
                 elements.transcribeBtn.disabled = false;
@@ -307,7 +308,7 @@
         elements.exportBtn.onclick = () => {
             const docContent = `<html><body style="font-family: sans-serif; padding: 40px;">
                 <h1 style="color: #0284C7; border-bottom: 2px solid #0284C7; padding-bottom: 10px;">Monika AI 秘書報告</h1>
-                <p style="color: #64748b;">會議日期：${new Date().toLocaleString()}</p>
+                <p style="color: #64748b;">產出日期：${new Date().toLocaleString()}</p>
                 <div style="background:#FFFBEB; padding:25px; border-radius:15px; border: 1px solid #FDE68A; margin: 25px 0;">
                     <h2 style="color: #92400e; margin-top: 0;">重点摘要</h2>
                     <div style="line-height: 1.8;">${generatedData.summary.replace(/\n/g, '<br>')}</div>
