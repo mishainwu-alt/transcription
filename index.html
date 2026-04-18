@@ -36,7 +36,7 @@
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold tracking-tight">AI 語音助理 <span class="text-sky-400 font-light">Pro</span></h1>
-                    <p class="text-xs text-slate-400 tracking-widest uppercase">Monika's Ultimate Version v4.5</p>
+                    <p class="text-xs text-slate-400 tracking-widest uppercase">Monika's Ultimate Version v4.6</p>
                 </div>
             </div>
             <button id="settingsBtn" class="p-2 hover:bg-slate-700 rounded-full transition-all text-slate-300 hover:text-white">
@@ -81,7 +81,7 @@
                 <svg class="w-5 h-5 mr-3 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                 啟動 AI 秘書產出報告
             </button>
-            <div id="statusLabel" class="mt-6 text-sky-600 font-bold animate-pulse hidden">秘書準備中...</div>
+            <div id="statusLabel" class="mt-6 text-sky-600 font-bold animate-pulse hidden text-center">秘書正在待命...</div>
         </div>
 
         <!-- Results -->
@@ -104,7 +104,6 @@
                         重點摘要與行動清單
                     </h3>
                     <div id="summaryContent" class="text-amber-900/80 leading-relaxed whitespace-pre-wrap text-lg mb-8"></div>
-                    <!-- Hashtag 容器 -->
                     <div id="hashtagContainer" class="flex flex-wrap border-t border-amber-200/40 pt-6"></div>
                 </section>
 
@@ -172,7 +171,7 @@
             elements.debugConsole.scrollTop = elements.debugConsole.scrollHeight;
         }
 
-        // --- 修復複製按鈕功能 (使用隱藏輸入框方式最穩定) ---
+        // --- 修復複製日誌功能 ---
         elements.copyLogBtn.onclick = (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -187,7 +186,7 @@
             textArea.select();
             try {
                 const successful = document.execCommand('copy');
-                if (successful) log("✅ 日誌已複製到剪貼簿！");
+                if (successful) log("✅ 日誌已複製！");
                 else log("❌ 複製失敗。");
             } catch (err) {
                 log("❌ 瀏覽器拒絕複製請求。");
@@ -195,7 +194,7 @@
             document.body.removeChild(textArea);
         };
 
-        // --- 真正的拖放功能 (Drag & Drop) 邏輯強化 ---
+        // --- 真正的拖放功能 (Drag & Drop) ---
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             elements.dropZone.addEventListener(eventName, (e) => {
                 e.preventDefault();
@@ -266,17 +265,17 @@
             const encodedKey = encodeURIComponent(key.trim());
             try {
                 log("1️⃣ 正在建立雲端連線...");
-                elements.statusLabel.textContent = "建立雲端檔案通道...";
+                elements.statusLabel.textContent = "正在連線 Google 雲端通道...";
                 const uploadInit = await fetch(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'X-Goog-Upload-Header-Content-Length': file.size, 'X-Goog-Upload-Header-Content-Type': file.type },
-                    body: JSON.stringify({ file: { display_name: `monika_v45_${Date.now()}` } })
+                    body: JSON.stringify({ file: { display_name: `monika_v46_${Date.now()}` } })
                 });
                 if (!uploadInit.ok) throw new Error(`通道初始化失敗 (${uploadInit.status})`);
                 const uploadUrl = uploadInit.headers.get('X-Goog-Upload-URL');
 
-                log("2️⃣ 搬運數據中...");
-                elements.statusLabel.textContent = "數據傳送中，請勿關閉...";
+                log("2️⃣ 正在搬運數據數據...");
+                elements.statusLabel.textContent = "錄音數據搬運中，請不要斷開網路...";
                 const uploadRes = await fetch(uploadUrl, {
                     method: 'PUT',
                     headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'upload, finalize', 'X-Goog-Upload-Offset': '0' },
@@ -285,55 +284,71 @@
                 const uploadData = await uploadRes.json();
                 const resourceName = uploadData.file.name;
                 const fileUri = uploadData.file.uri;
-                log(`✅ 搬運完成！編號：${resourceName}`);
+                log(`✅ 搬運完成！雲端位置已備妥。`);
 
-                log("3️⃣ AI 正在閱讀錄音檔內容...");
+                log("3️⃣ AI 正在閱讀錄音內容...");
                 while (true) {
                     await new Promise(r => setTimeout(r, 4000));
                     const check = await fetch(`${BASE_URL}/${API_VERSION}/${resourceName}?key=${encodedKey}`);
                     const status = await check.json();
-                    log(`⏳ 解析狀態：${status.state}`);
+                    log(`⏳ 目前解析狀態：${status.state}`);
                     if (status.state === "ACTIVE") break;
-                    if (status.state === "FAILED") throw new Error("音檔雲端解析失敗。");
+                    if (status.state === "FAILED") throw new Error("伺服器端音檔解析失敗。");
                 }
 
-                log(`4️⃣ AI 正全力整理報告與 Hashtags...`);
-                elements.statusLabel.textContent = "AI 整理摘要、行動清單與標籤中...";
+                // --- 緩衝期：防止 503 錯誤 ---
+                log("⌛ 緩衝 2 秒，等待大腦完全覺醒...");
+                await new Promise(r => setTimeout(r, 2000));
+
+                log(`4️⃣ 啟動正式撰稿流程 (使用 ${CURRENT_MODEL})...`);
+                elements.statusLabel.textContent = "AI 秘書整理摘要與標籤中...";
                 
-                // --- 慶功版指令：要求產出 Hashtag ---
-                const prompt = "妳是 Monika 的專屬 AI 秘書，擅長製作精準的會議紀錄。請針對錄音內容產出繁體中文：1.重點摘要與決策清單 2.根據會議主題產出 3-5 個重點 Hashtags (例如 #政府案, #資安) 3.去除贅字的完整逐字稿。妳必須回傳 JSON 格式：{ \"summary\": \"內容\", \"hashtags\": [\"#標籤1\", \"#標籤2\"], \"transcript\": \"內容\" }。絕對禁止使用簡體中文或中國大陸用語。";
+                const prompt = "妳是 Monika 的專屬 AI 秘書，擅長製作精準的會議紀錄。請針對錄音產出繁體中文：1.重點摘要與決策清單 2.產出 3-5 個關鍵重點 Hashtags (例如 #政府案) 3.去除贅字的完整逐字稿。回傳格式必須為 JSON：{ \"summary\": \"內容\", \"hashtags\": [\"#標籤1\", \"#標籤2\"], \"transcript\": \"內容\" }。絕對禁止簡體，語氣優雅專業。";
                 
                 const getPayload = () => ({
                     contents: [{ parts: [{ text: prompt }, { fileData: { mimeType: file.type, fileUri: fileUri } }] }],
                     generationConfig: { responseMimeType: "application/json", temperature: 0.1 }
                 });
 
-                let response = await fetch(`${BASE_URL}/${API_VERSION}/models/${CURRENT_MODEL}:generateContent?key=${encodedKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(getPayload())
-                });
-
-                // 自動模型修復機制 (若 404 則嘗試尋找可用模型)
-                if (response.status === 404) {
-                    log(`💡 發生 404 錯誤，啟動自動適配備援大腦...`);
-                    const models = await listAvailableModels(key);
-                    const alt = models.find(m => m.includes("flash") && !m.includes("tuning")) || models[0];
-                    if (alt && alt !== CURRENT_MODEL) {
-                        log(`🚀 發現替代模型：${alt}，重新啟動撰稿流程...`);
-                        CURRENT_MODEL = alt;
-                        localStorage.setItem('last_successful_model', alt);
-                        response = await fetch(`${BASE_URL}/${API_VERSION}/models/${CURRENT_MODEL}:generateContent?key=${encodedKey}`, {
+                const fetchWithRetry = async (model, retries = 3, delay = 2000) => {
+                    for (let i = 0; i < retries; i++) {
+                        log(`🖊️ 嘗試產出報告 (第 ${i + 1} 次)...`);
+                        const response = await fetch(`${BASE_URL}/${API_VERSION}/models/${model}:generateContent?key=${encodedKey}`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(getPayload())
                         });
-                    }
-                }
 
-                if (!response.ok) throw new Error(`AI 暫時無法寫稿 (${response.status})`);
-                const result = await response.json();
-                log("🎉 任務成功完成！Monika，報告準備好了。");
+                        if (response.ok) return response;
+                        
+                        // 若 404，立刻尋找替代品
+                        if (response.status === 404) {
+                            log(`💡 發生 404 錯誤，啟動自動適配機制...`);
+                            const models = await listAvailableModels(key);
+                            const alt = models.find(m => m === "gemini-1.5-flash") || models.find(m => m.includes("flash") && !m.includes("tuning")) || models[0];
+                            if (alt && alt !== model) {
+                                log(`🚀 發現替代大腦：${alt}，重新挑戰...`);
+                                CURRENT_MODEL = alt;
+                                localStorage.setItem('last_successful_model', alt);
+                                return fetchWithRetry(alt, retries, delay);
+                            }
+                        }
+
+                        if (response.status === 503 || response.status === 429) {
+                            log(`😴 伺服器忙碌 (HTTP ${response.status})，${delay/1000} 秒後重試...`);
+                            await new Promise(r => setTimeout(r, delay));
+                            delay *= 2; // 指數退避
+                            continue;
+                        }
+
+                        throw new Error(`AI 生成失敗 (HTTP ${response.status})`);
+                    }
+                    throw new Error("伺服器持續忙碌中，請稍後再試。");
+                };
+
+                const finalResponse = await fetchWithRetry(CURRENT_MODEL);
+                const result = await finalResponse.json();
+                log("🎉 任務成功完成！Monika，報告好了。");
                 return JSON.parse(result.candidates[0].content.parts[0].text);
             } catch (e) {
                 log(`🛑 [嚴重錯誤] ${e.message}`);
@@ -347,14 +362,14 @@
             elements.transcribeBtn.disabled = true;
             elements.statusLabel.classList.remove('hidden', 'text-red-500');
             elements.resultSection.classList.add('hidden');
-            elements.statusLabel.textContent = "啟動雲端秘書引擎...";
+            elements.statusLabel.textContent = "秘書引擎啟動中...";
             
             try {
                 const data = await startTranscription(selectedFile, key);
                 generatedData = data;
                 elements.summaryContent.textContent = data.summary;
                 
-                // 顯示動態 Hashtags
+                // 顯示 Hashtags
                 elements.hashtagContainer.innerHTML = "";
                 if (data.hashtags && Array.isArray(data.hashtags)) {
                     data.hashtags.forEach(tag => {
@@ -369,7 +384,7 @@
                 elements.resultSection.classList.remove('hidden');
                 elements.statusLabel.classList.add('hidden');
             } catch (err) {
-                elements.statusLabel.textContent = "❌ 處理失敗，請展開下方日誌。";
+                elements.statusLabel.textContent = "❌ 處理失敗，請展開日誌並貼給小 Ge。";
                 elements.statusLabel.classList.add('text-red-500');
             } finally {
                 elements.transcribeBtn.disabled = false;
@@ -388,7 +403,7 @@
                 </div>
                 <h2 style="color: #1e293b; font-size: 20px;">會議完整逐字稿</h2>
                 <div style="line-height: 1.8; color: #475569; font-size: 15px;">${generatedData.transcript.replace(/\n/g, '<br>')}</div>
-                <p style="text-align: center; color: #cbd5e1; font-size: 11px; margin-top: 50px;">Processed by Monika's AI Assistant v4.5</p>
+                <p style="text-align: center; color: #cbd5e1; font-size: 11px; margin-top: 50px;">Processed by Monika's AI Assistant v4.6</p>
                 </body></html>`;
             const blob = new Blob(['\ufeff', docContent], { type: 'application/msword' });
             const url = URL.createObjectURL(blob);
