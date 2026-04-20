@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monika | AI 語音助理 Pro</title>
+    <!-- 專屬客製化 Gemini Speaking Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M45 15 L49 41 L75 45 L49 49 L45 75 L41 49 L15 45 L41 41 Z' fill='%230EA5E9' /%3E%3Cpath d='M65 30 Q80 45 65 60' fill='none' stroke='%230EA5E9' stroke-width='6' stroke-linecap='round' /%3E%3Cpath d='M75 20 Q100 45 75 70' fill='none' stroke='%230EA5E9' stroke-width='4' stroke-linecap='round' opacity='0.5' /%3E%3C/svg%3E">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <style>
@@ -11,129 +14,133 @@
         .drag-over { border-color: #0EA5E9 !important; background-color: #F0F9FF !important; transform: scale(1.01); box-shadow: 0 0 40px rgba(14, 165, 233, 0.2); }
         .transcript-container::-webkit-scrollbar { width: 6px; }
         .transcript-container::-webkit-scrollbar-thumb { background-color: #CBD5E1; border-radius: 10px; }
-        .debug-console { background: #0F172A; color: #38BDF8; font-family: monospace; font-size: 11px; padding: 15px; border-radius: 12px; margin-top: 15px; max-height: 200px; overflow-y: auto; border: 1px solid #1E293B; line-height: 1.6; }
+        .debug-console { background: #0F172A; color: #38BDF8; font-family: monospace; font-size: 11px; padding: 15px; border-radius: 12px; margin-top: 15px; max-height: 250px; overflow-y: auto; line-height: 1.6; }
         details summary::-webkit-details-marker { display: none; }
         .hashtag-pill { background-color: #E0F2FE; color: #0369A1; padding: 6px 16px; border-radius: 99px; font-size: 14px; font-weight: 700; margin-right: 10px; margin-bottom: 10px; display: inline-block; border: 1px solid #BAE6FD; transition: all 0.3s; }
         .hashtag-pill:hover { background-color: #BAE6FD; transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-result { animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
         #toast { transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+        .input-group { transition: all 0.3s ease; }
+        .input-group:focus-within { border-color: #0EA5E9; box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1); }
+        /* 聲波動畫 */
+        @keyframes pulse-wave { 0% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 0.5; } }
+        .speaking-icon svg { animation: pulse-wave 2s infinite ease-in-out; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
     <!-- Header -->
-    <header class="bg-[#0F172A] text-white py-8 shadow-2xl border-b-4 border-sky-500 relative overflow-hidden">
-        <div class="absolute inset-0 opacity-5 pointer-events-none">
-            <svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#grid)"/><defs><pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="white"/></pattern></defs></svg>
-        </div>
-        <div class="container mx-auto px-6 flex justify-between items-center relative z-10">
-            <div class="flex items-center space-x-5">
-                <div class="w-14 h-14 bg-sky-500 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-all duration-500 cursor-pointer">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+    <header class="bg-[#0F172A] text-white py-6 shadow-2xl border-b-4 border-sky-500 sticky top-0 z-40">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <!-- 自定義 Gemini Speaking Icon -->
+                <div class="w-14 h-14 bg-sky-500 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-all duration-500 speaking-icon">
+                    <svg width="40" height="40" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M45 15 L49 41 L75 45 L49 49 L45 75 L41 49 L15 45 L41 41 Z" fill="white" />
+                        <path d="M65 30 Q80 45 65 60" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" />
+                        <path d="M75 20 Q100 45 75 70" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" opacity="0.5" />
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-extrabold tracking-tight">Monika | AI 語音助理 <span class="text-sky-400 font-light">Pro</span></h1>
-                    <p class="text-xs text-slate-400 tracking-[0.2em] uppercase font-bold mt-1">Official Master Edition v5.1</p>
+                    <h1 class="text-2xl font-bold tracking-tight">Monika | AI 語音助理 <span class="text-sky-400">Pro</span></h1>
+                    <p class="text-[10px] text-slate-400 tracking-widest uppercase font-bold">Custom Branded Edition v5.6</p>
                 </div>
             </div>
-            <button id="settingsBtn" class="p-3 hover:bg-slate-800 rounded-full transition-all text-slate-300 hover:text-white group border border-slate-700 hover:border-slate-500">
-                <svg class="w-6 h-6 group-hover:rotate-90 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <button id="settingsBtn" class="p-2 hover:bg-slate-700 rounded-full transition-all text-slate-300">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
             </button>
         </div>
     </header>
 
-    <main class="flex-grow container mx-auto px-6 py-12 max-w-5xl">
-        <!-- Settings -->
+    <main class="flex-grow container mx-auto px-6 py-10 max-w-5xl">
+        <!-- Settings Overlay -->
         <div id="settingsOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md hidden z-50 flex items-center justify-center p-6">
-            <div class="bg-white rounded-[2rem] p-10 max-w-md w-full shadow-2xl border border-white/20">
-                <h3 class="text-2xl font-bold mb-6 text-slate-800 flex items-center">
-                    <div class="w-8 h-8 bg-sky-100 text-sky-600 rounded-lg flex items-center justify-center mr-3">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
-                    </div>
-                    API 金鑰設定
+            <div class="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl">
+                <h3 class="text-xl font-bold mb-6 text-slate-800 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-sky-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                    控制中心
                 </h3>
-                <input type="password" id="apiKeyInput" placeholder="在此貼上 Google AI Key..." class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl mb-8 outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all text-lg shadow-inner">
-                <div class="flex space-x-4">
-                    <button id="saveKeyBtn" class="flex-2 bg-sky-600 text-white px-8 py-4 rounded-2xl font-bold hover:bg-sky-700 active:scale-95 transition-all shadow-lg shadow-sky-100">儲存變更</button>
-                    <button id="closeSettingsBtn" class="flex-1 bg-slate-100 text-slate-600 px-4 py-4 rounded-2xl font-bold hover:bg-slate-200 transition-all">取消</button>
+                <div class="space-y-4">
+                    <input type="password" id="apiKeyInput" placeholder="貼上 Google Gemini API Key..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-4 focus:ring-sky-500/10 transition-all shadow-inner">
+                    <input type="password" id="notionTokenInput" placeholder="Notion Token..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-4 focus:ring-sky-500/10 transition-all shadow-inner">
+                    <input type="text" id="notionDbInput" placeholder="Notion Database ID..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-4 focus:ring-sky-500/10 transition-all shadow-inner">
+                </div>
+                <div class="flex space-x-3 mt-8">
+                    <button id="saveKeyBtn" class="flex-1 bg-sky-600 text-white py-3 rounded-xl font-bold hover:bg-sky-700 active:scale-95 transition-all">儲存設定</button>
+                    <button id="closeSettingsBtn" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 transition-all">取消</button>
                 </div>
             </div>
         </div>
 
-        <!-- Upload -->
-        <section id="dropZone" class="bg-white border-4 border-dashed border-slate-200 rounded-[3rem] p-20 text-center cursor-pointer hover:border-sky-500 hover:bg-sky-50/30 transition-all duration-500 group shadow-sm relative overflow-hidden">
-            <input type="file" id="audioInput" class="hidden" accept="audio/*">
-            <div class="flex flex-col items-center pointer-events-none relative z-10">
-                <div class="w-28 h-28 bg-slate-50 text-slate-300 rounded-[2rem] flex items-center justify-center mb-8 group-hover:bg-white group-hover:text-sky-500 shadow-sm transition-all duration-500 transform group-hover:rotate-12 group-hover:scale-110">
-                    <svg class="w-14 h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+            <!-- 1. Audio Upload -->
+            <section id="dropZone" class="bg-white border-4 border-dashed border-slate-200 rounded-[2.5rem] p-10 text-center cursor-pointer hover:border-sky-500 hover:bg-sky-50/30 transition-all group relative">
+                <input type="file" id="audioInput" class="hidden" accept="audio/*">
+                <div class="flex flex-col items-center pointer-events-none">
+                    <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-white group-hover:text-sky-500 shadow-sm transition-all transform group-hover:scale-110">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z"/><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm0 0V20"/></svg>
+                    </div>
+                    <h2 class="text-xl font-bold text-slate-700 tracking-tight">1. 上傳錄音 (必填)</h2>
+                    <div id="fileInfo" class="hidden mt-4 animate-bounce">
+                        <span id="fileNameDisplay" class="px-4 py-2 bg-sky-600 text-white rounded-lg text-xs font-bold"></span>
+                    </div>
                 </div>
-                <h2 class="text-3xl font-extrabold text-slate-700 tracking-tight">拖放會議錄音至此</h2>
-                <p class="text-slate-400 mt-3 font-medium text-lg">智能識別音軌內容並自動摘要</p>
-                <div id="fileInfo" class="hidden mt-10 flex flex-col items-center animate-bounce">
-                    <span id="fileNameDisplay" class="px-10 py-4 bg-sky-600 text-white rounded-2xl text-lg font-bold shadow-xl border border-sky-400"></span>
+            </section>
+
+            <!-- 3. Note Upload -->
+            <section id="noteDropZone" class="bg-white border-4 border-dashed border-slate-200 rounded-[2.5rem] p-10 text-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/30 transition-all group relative">
+                <input type="file" id="noteInput" class="hidden" accept=".pdf,.docx,.txt">
+                <div class="flex flex-col items-center pointer-events-none">
+                    <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-white group-hover:text-emerald-500 shadow-sm transition-all transform group-hover:scale-110">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 1 0 01-2 2z"></path></svg>
+                    </div>
+                    <h2 class="text-xl font-bold text-slate-700 tracking-tight">3. 筆記文件 (選填)</h2>
+                    <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold">PDF / DOCX / TXT</p>
+                    <div id="noteFileInfo" class="hidden mt-4 animate-bounce">
+                        <span id="noteFileNameDisplay" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold"></span>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
+
+        <!-- 2. Raw Transcript Input -->
+        <div class="mb-10 input-group bg-white p-8 rounded-[3rem] border border-slate-200 shadow-sm">
+            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center">
+                <div class="w-1.5 h-4 bg-sky-500 rounded-full mr-2"></div>
+                2. 粘貼初步逐字稿 (選填)
+            </label>
+            <textarea id="rawTranscriptInput" placeholder="如果有其他工具產出的亂七八糟逐字稿，可以貼在這裡讓 AI 做對齊..." class="w-full h-32 text-slate-600 outline-none resize-none text-sm leading-relaxed scrollbar-hide"></textarea>
+        </div>
 
         <div class="mt-14 flex flex-col items-center">
-            <button id="transcribeBtn" disabled class="bg-slate-900 text-white px-20 py-6 rounded-[2rem] font-bold text-2xl disabled:bg-slate-200 disabled:text-slate-400 shadow-2xl hover:bg-sky-600 transition-all active:scale-95 flex items-center group">
-                <svg class="w-7 h-7 mr-4 group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                啟動 AI 秘書引擎
+            <button id="transcribeBtn" disabled class="bg-[#0F172A] text-white px-20 py-6 rounded-[2.5rem] font-bold text-2xl disabled:bg-slate-200 disabled:text-slate-400 shadow-2xl hover:bg-sky-600 transition-all active:scale-95 flex items-center group">
+                啟動多維感官分析
             </button>
-            <div id="statusLabel" class="mt-10 text-sky-600 font-extrabold animate-pulse hidden text-xl tracking-wider">AI 秘書正開足馬力工作下...</div>
+            <div id="statusLabel" class="mt-8 text-sky-600 font-extrabold animate-pulse hidden text-center text-xl">小Ge 正在閱讀文件並聆聽錄音...</div>
         </div>
 
-        <!-- Results -->
-        <div id="resultSection" class="mt-24 hidden space-y-16">
+        <!-- Staging Zone -->
+        <div id="queueSection" class="mt-24 space-y-10 hidden">
             <div class="flex justify-between items-end border-b-2 border-slate-100 pb-8">
                 <div>
-                    <h2 class="text-4xl font-extrabold text-slate-800 tracking-tighter">處理成果</h2>
-                    <p class="text-slate-400 text-lg mt-2 font-medium">已為您精煉重點並優化文字內容</p>
+                    <h2 class="text-4xl font-extrabold text-slate-800 tracking-tighter">🗂️ 處理成果暫存</h2>
+                    <p class="text-slate-400 text-lg mt-2">片段已處理完成，可隨時批次同步</p>
                 </div>
-                <button id="exportBtn" class="bg-emerald-600 text-white px-10 py-5 rounded-[1.5rem] text-lg font-bold shadow-xl hover:bg-emerald-700 transition-all transform hover:-translate-y-2 flex items-center">
-                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 1 0 01-2 2z"></path></svg>
-                    匯出 Word 文件
-                </button>
+                <div class="flex space-x-4">
+                    <button id="syncAllNotionBtn" class="bg-sky-600 text-white px-8 py-4 rounded-[1.5rem] font-bold text-lg shadow-xl hover:bg-sky-700 transition-all transform hover:-translate-y-1">🚀 同步至 Notion</button>
+                    <button id="clearQueueBtn" class="bg-slate-100 text-slate-400 px-6 py-4 rounded-[1.5rem] font-bold">清空</button>
+                </div>
             </div>
-
-            <div class="grid gap-12">
-                <section class="animate-result bg-amber-50 p-12 rounded-[3.5rem] border border-amber-200/50 shadow-sm relative overflow-hidden">
-                    <div class="flex justify-between items-center mb-10">
-                        <h3 class="font-extrabold text-amber-800 text-3xl flex items-center tracking-tight">
-                            <span class="w-4 h-10 bg-amber-400 rounded-full mr-5 shadow-sm"></span>
-                            重點摘要與決策清單
-                        </h3>
-                        <button id="copySummaryBtn" class="text-sm bg-amber-200/50 text-amber-800 px-5 py-2.5 rounded-xl hover:bg-amber-200 font-bold transition-all border border-amber-300/30">📋 一鍵複製摘要</button>
-                    </div>
-                    <div id="summaryContent" class="text-amber-900/80 leading-relaxed whitespace-pre-wrap text-2xl mb-12 font-medium"></div>
-                    <div id="hashtagContainer" class="flex flex-wrap border-t border-amber-200/50 pt-10"></div>
-                </section>
-
-                <section class="animate-result bg-white p-12 rounded-[3.5rem] border border-slate-200 shadow-sm">
-                    <h3 class="font-extrabold text-slate-800 text-3xl mb-10 flex items-center border-b border-slate-50 pb-8 tracking-tight">
-                        <span class="w-4 h-10 bg-sky-500 rounded-full mr-5 shadow-sm"></span>
-                        會議完整逐字稿
-                    </h3>
-                    <div id="transcriptContainer" class="transcript-container max-h-[800px] overflow-y-auto text-slate-600 whitespace-pre-wrap leading-[2.2] text-xl pr-8 font-medium"></div>
-                </section>
-            </div>
+            <div id="segmentList" class="space-y-8"></div>
         </div>
 
-        <!-- Debug Console -->
+        <!-- Debug -->
         <div id="debugArea" class="mt-24 pt-12 border-t border-slate-200/60">
             <details class="group">
-                <summary class="flex justify-between items-center cursor-pointer text-slate-300 hover:text-slate-500 transition-all duration-300">
-                    <div class="flex items-center space-x-4">
-                        <span class="text-[10px] font-black tracking-[0.4em] uppercase">Control Center / Debug Console</span>
-                        <div class="flex space-x-3 opacity-0 group-open:opacity-100 transition-all">
-                            <button id="checkModelsBtn" class="text-[9px] bg-sky-100 text-sky-600 px-3 py-1.5 rounded-lg hover:bg-sky-200 font-bold">SCAN MODELS</button>
-                            <button id="copyLogBtn" class="text-[9px] bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-300 font-bold">COPY LOG</button>
-                        </div>
-                    </div>
-                    <span class="text-slate-300 group-open:rotate-180 transition-transform">▼</span>
+                <summary class="flex justify-between items-center cursor-pointer text-slate-300 hover:text-slate-500 transition-all">
+                    <span class="text-[10px] font-black tracking-[0.4em] uppercase">Expert Control / Debug Console</span>
+                    <button id="copyLogBtn" class="text-[9px] bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-300 font-bold">COPY LOG</button>
                 </summary>
                 <div id="debugConsole" class="debug-console">等待 Monika 下達指令...</div>
             </details>
@@ -141,270 +148,231 @@
     </main>
 
     <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-8 py-4 rounded-2xl shadow-2xl opacity-0 pointer-events-none z-50 font-bold tracking-wide">
-        內容已複製到剪貼簿 ✨
-    </div>
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-10 py-5 rounded-[1.5rem] shadow-2xl opacity-0 pointer-events-none z-[100] font-bold text-lg">操作成功 ✨</div>
 
     <script>
+        // --- 模型自動適配 3.0 ---
         let CURRENT_MODEL = localStorage.getItem('last_successful_model') || "gemini-1.5-flash"; 
         const API_VERSION = "v1beta";
         const BASE_URL = "https://generativelanguage.googleapis.com";
+        let segmentQueue = [];
+        let selectedAudio = null;
+        let selectedNote = null;
 
         const elements = {
-            settingsBtn: document.getElementById('settingsBtn'),
-            settingsOverlay: document.getElementById('settingsOverlay'),
-            apiKeyInput: document.getElementById('apiKeyInput'),
-            saveKeyBtn: document.getElementById('saveKeyBtn'),
-            closeSettingsBtn: document.getElementById('closeSettingsBtn'),
-            audioInput: document.getElementById('audioInput'),
-            transcribeBtn: document.getElementById('transcribeBtn'),
-            fileNameDisplay: document.getElementById('fileNameDisplay'),
-            statusLabel: document.getElementById('statusLabel'),
-            resultSection: document.getElementById('resultSection'),
-            summaryContent: document.getElementById('summaryContent'),
-            hashtagContainer: document.getElementById('hashtagContainer'),
-            transcriptContainer: document.getElementById('transcriptContainer'),
-            debugConsole: document.getElementById('debugConsole'),
-            copyLogBtn: document.getElementById('copyLogBtn'),
-            copySummaryBtn: document.getElementById('copySummaryBtn'),
-            exportBtn: document.getElementById('exportBtn'),
-            dropZone: document.getElementById('dropZone'),
-            checkModelsBtn: document.getElementById('checkModelsBtn'),
-            fileInfo: document.getElementById('fileInfo'),
-            toast: document.getElementById('toast')
+            get audioInput() { return document.getElementById('audioInput'); },
+            get noteInput() { return document.getElementById('noteInput'); },
+            get rawTranscriptInput() { return document.getElementById('rawTranscriptInput'); },
+            get transcribeBtn() { return document.getElementById('transcribeBtn'); },
+            get dropZone() { return document.getElementById('dropZone'); },
+            get noteDropZone() { return document.getElementById('noteDropZone'); },
+            get fileNameDisplay() { return document.getElementById('fileNameDisplay'); },
+            get noteFileNameDisplay() { return document.getElementById('noteFileNameDisplay'); },
+            get statusLabel() { return document.getElementById('statusLabel'); },
+            get segmentList() { return document.getElementById('segmentList'); },
+            get queueSection() { return document.getElementById('queueSection'); },
+            get debugConsole() { return document.getElementById('debugConsole'); },
+            get toast() { return document.getElementById('toast'); },
+            get settingsBtn() { return document.getElementById('settingsBtn'); },
+            get settingsOverlay() { return document.getElementById('settingsOverlay'); },
+            get saveKeyBtn() { return document.getElementById('saveKeyBtn'); },
+            get closeSettingsBtn() { return document.getElementById('closeSettingsBtn'); },
+            get apiKeyInput() { return document.getElementById('apiKeyInput'); },
+            get notionTokenInput() { return document.getElementById('notionTokenInput'); },
+            get notionDbInput() { return document.getElementById('notionDbInput'); },
+            get syncAllNotionBtn() { return document.getElementById('syncAllNotionBtn'); },
+            get clearQueueBtn() { return document.getElementById('clearQueueBtn'); },
+            get copyLogBtn() { return document.getElementById('copyLogBtn'); }
         };
-
-        let selectedFile = null;
-        let generatedData = { summary: "", hashtags: [], transcript: "" };
 
         function log(msg) {
+            const consoleEl = elements.debugConsole;
+            if (!consoleEl) return;
             const time = new Date().toLocaleTimeString();
-            elements.debugConsole.innerHTML += `<div>[${time}] ${msg}</div>`;
-            elements.debugConsole.scrollTop = elements.debugConsole.scrollHeight;
+            consoleEl.innerHTML += `<div>[${time}] ${msg}</div>`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
         }
 
-        function showToast() {
-            elements.toast.classList.replace('opacity-0', 'opacity-100');
-            elements.toast.classList.replace('bottom-10', 'bottom-16');
-            setTimeout(() => {
-                elements.toast.classList.replace('opacity-100', 'opacity-0');
-                elements.toast.classList.replace('bottom-16', 'bottom-10');
-            }, 3000);
+        function showToast(msg) {
+            const toastEl = elements.toast;
+            if (!toastEl) return;
+            toastEl.textContent = msg;
+            toastEl.classList.replace('opacity-0', 'opacity-100');
+            setTimeout(() => toastEl.classList.replace('opacity-100', 'opacity-0'), 3000);
         }
 
-        async function copyToClipboard(text) {
-            try {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    await navigator.clipboard.writeText(text);
-                    return true;
-                }
-            } catch (err) {}
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.position = "fixed";
-            textArea.style.left = "-9999px";
-            document.body.appendChild(textArea);
-            textArea.select();
-            const result = document.execCommand('copy');
-            document.body.removeChild(textArea);
-            return result;
-        }
-
-        elements.copyLogBtn.onclick = async (e) => {
-            e.preventDefault(); e.stopPropagation();
-            if(await copyToClipboard(elements.debugConsole.innerText)) log("✅ 日誌已成功複製！");
-        };
-
-        elements.copySummaryBtn.onclick = async () => {
-            if(await copyToClipboard(elements.summaryContent.innerText)) showToast();
-        };
-
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-            elements.dropZone.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); });
-        });
-        elements.dropZone.addEventListener('dragenter', () => elements.dropZone.classList.add('drag-over'));
-        elements.dropZone.addEventListener('dragover', () => elements.dropZone.classList.add('drag-over'));
-        elements.dropZone.addEventListener('dragleave', () => elements.dropZone.classList.remove('drag-over'));
-        elements.dropZone.addEventListener('drop', (e) => {
-            elements.dropZone.classList.remove('drag-over');
-            handleFileSelection(e.dataTransfer.files[0]);
-        });
-        elements.dropZone.onclick = () => elements.audioInput.click();
-        elements.audioInput.onchange = (e) => handleFileSelection(e.target.files[0]);
-
-        function handleFileSelection(file) {
-            if (file && file.type.startsWith('audio/')) {
-                selectedFile = file;
-                elements.fileNameDisplay.textContent = `${file.name} (${(file.size/1024/1024).toFixed(1)}MB)`;
-                elements.fileInfo.classList.remove('hidden');
-                elements.transcribeBtn.disabled = false;
-                log(`📁 檔案已就位：${file.name}`);
-            } else if (file) {
-                alert("Monika，這不是音訊檔案喔，請重新拖放正確的檔案！");
-            }
-        }
-
-        async function listAvailableModels(key) {
+        async function autoDiscoverModel(key) {
+            log("🔍 正在預先偵測您的可用大腦...");
             try {
                 const res = await fetch(`${BASE_URL}/${API_VERSION}/models?key=${encodeURIComponent(key)}`);
                 const data = await res.json();
-                return data.models ? data.models.map(m => m.name.replace("models/", "")) : [];
-            } catch (e) { return []; }
+                if (data.models) {
+                    const names = data.models.map(m => m.name.replace("models/", ""));
+                    const best = names.find(m => m.includes("2.5-flash")) || 
+                                names.find(m => m.includes("1.5-flash")) || 
+                                names.find(m => m.includes("flash")) || 
+                                names[0];
+                    if (best) {
+                        CURRENT_MODEL = best;
+                        localStorage.setItem('last_successful_model', best);
+                        log(`🚀 已鎖定最強大腦：${best}`);
+                    }
+                }
+            } catch (e) { log("❌ 大腦掃描異常"); }
         }
 
-        elements.checkModelsBtn.onclick = (e) => {
-            const key = getSavedKey();
-            if (!key) return;
-            listAvailableModels(key).then(names => log("📋 可用大腦：" + names.join(", ")));
+        window.onload = () => {
+            const key = localStorage.getItem('gemini_api_key');
+            if (key) autoDiscoverModel(key);
+
+            elements.dropZone.onclick = () => elements.audioInput.click();
+            elements.audioInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    selectedAudio = file;
+                    elements.fileNameDisplay.textContent = file.name;
+                    document.getElementById('fileInfo').classList.remove('hidden');
+                    elements.transcribeBtn.disabled = false;
+                    log(`📁 音檔就位：${file.name}`);
+                }
+            };
+
+            elements.noteDropZone.onclick = () => elements.noteInput.click();
+            elements.noteInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    selectedNote = file;
+                    elements.noteFileNameDisplay.textContent = file.name;
+                    document.getElementById('noteFileInfo').classList.remove('hidden');
+                    log(`📖 筆記文件就位：${file.name}`);
+                }
+            };
         };
 
-        function getSavedKey() { return localStorage.getItem('gemini_api_key') || ""; }
-        elements.saveKeyBtn.onclick = () => {
-            const val = elements.apiKeyInput.value.trim();
-            if (val) { localStorage.setItem('gemini_api_key', val); elements.settingsOverlay.classList.add('hidden'); log("⚙️ 金鑰已更新。"); }
-        };
-
-        async function startTranscription(file, key) {
+        async function startTranscription(audioFile, noteFile, rawText, key) {
             const encodedKey = encodeURIComponent(key.trim());
             try {
-                log("1️⃣ 正在聯繫雲端祕書...");
-                elements.statusLabel.textContent = "與 Google 雲端通訊中...";
-                const uploadInit = await fetch(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
+                let noteUri = null;
+                if (noteFile) {
+                    log(`1️⃣ 片段筆記同步中...`);
+                    const nUpload = await fetch(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'X-Goog-Upload-Header-Content-Length': noteFile.size, 'X-Goog-Upload-Header-Content-Type': noteFile.type },
+                        body: JSON.stringify({ file: { display_name: `note_${Date.now()}` } })
+                    });
+                    const nUrl = nUpload.headers.get('X-Goog-Upload-URL');
+                    const nRes = await (await fetch(nUrl, { method: 'PUT', headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'upload, finalize', 'X-Goog-Upload-Offset': '0' }, body: noteFile })).json();
+                    noteUri = nRes.file.uri;
+                }
+
+                log(`2️⃣ 傳送音訊位元數據...`);
+                elements.statusLabel.textContent = "與雲端同步音軌中...";
+                const aUpload = await fetch(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'X-Goog-Upload-Header-Content-Length': file.size, 'X-Goog-Upload-Header-Content-Type': file.type },
-                    body: JSON.stringify({ file: { display_name: `monika_v51_${Date.now()}` } })
+                    headers: { 'Content-Type': 'application/json', 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'X-Goog-Upload-Header-Content-Length': audioFile.size, 'X-Goog-Upload-Header-Content-Type': audioFile.type },
+                    body: JSON.stringify({ file: { display_name: `audio_${Date.now()}` } })
                 });
-                if (!uploadInit.ok) throw new Error(`連線失敗 (${uploadInit.status})`);
-                const uploadUrl = uploadInit.headers.get('X-Goog-Upload-URL');
+                const aUrl = aUpload.headers.get('X-Goog-Upload-URL');
+                const aRes = await (await fetch(aUrl, { method: 'PUT', headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'upload, finalize', 'X-Goog-Upload-Offset': '0' }, body: audioFile })).json();
+                const audioUri = aRes.file.uri;
+                const audioName = aRes.file.name;
 
-                log("2️⃣ 搬運錄音數據...");
-                const uploadRes = await fetch(uploadUrl, { 
-                    method: 'PUT', 
-                    headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'upload, finalize', 'X-Goog-Upload-Offset': '0' }, 
-                    body: file 
-                });
-                const uploadData = await uploadRes.json();
-                const finalName = uploadData.file.name;
-                const fileUri = uploadData.file.uri;
-                log(`✅ 搬運完成！正在排隊分析...`);
-
-                log("3️⃣ AI 正在閱讀內容...");
+                log(`3️⃣ AI 正在理解內容...`);
                 while (true) {
                     await new Promise(r => setTimeout(r, 4000));
-                    const check = await fetch(`${BASE_URL}/${API_VERSION}/${finalName}?key=${encodedKey}`);
-                    const status = await check.json();
+                    const status = await (await fetch(`${BASE_URL}/${API_VERSION}/${audioName}?key=${encodedKey}`)).json();
                     if (status.state === "ACTIVE") break;
-                    if (status.state === "FAILED") throw new Error("解析失敗");
                 }
 
-                log("⌛ 深度緩衝 10 秒...");
+                log(`4️⃣ 結合多維資料產出報告 (10s 緩衝)...`);
                 await new Promise(r => setTimeout(r, 10000));
 
-                log(`4️⃣ 正式啟動撰稿流程 (使用 ${CURRENT_MODEL})...`);
-                elements.statusLabel.textContent = "AI 秘書正精煉內容並製作標籤...";
-                
-                const prompt = "妳是 Monika 的專屬 AI 秘書，擅長製作專業會議紀錄。請分析這段錄音，並產出繁體中文：1.重點摘要與決策清單 2.產出 3-5 個重點 Hashtags 3.完整逐字稿。內容需精煉優雅。妳必須回傳 JSON：{ \"summary\": \"內容\", \"hashtags\": [\"#標籤\"], \"transcript\": \"內容\" }。絕對禁止簡體。";
-                
-                const fetchWithRetry = async (model, retries = 5, delay = 4000) => {
-                    for (let i = 0; i < retries; i++) {
-                        log(`🖋️ 嘗試產出報告 (第 ${i + 1} 次)...`);
-                        const response = await fetch(`${BASE_URL}/${API_VERSION}/models/${model}:generateContent?key=${encodedKey}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                contents: [{ parts: [{ text: prompt }, { fileData: { mimeType: file.type, fileUri: fileUri } }] }],
-                                generationConfig: { responseMimeType: "application/json", temperature: 0.1 }
-                            })
-                        });
+                const prompt = `妳是 Monika 的專屬 AI 祕書。請優先參考【初步逐字稿內容】作為背景知識。結合錄音與提供的【筆記摘要】文件內容進行精準對齊，修正原本逐字稿中的術語錯誤，產出繁體中文：1. 重點摘要 2. 行動決策清單 3. 3-5個精準Hashtags 4. 精煉後的正式逐字稿。初步參考文字：${rawText || "無"}。妳必須回傳 JSON：{ "summary": "內容", "hashtags": ["#標籤"], "transcript": "內容" }。絕對禁止簡體。`;
 
-                        if (response.ok) { localStorage.setItem('last_successful_model', model); return response; }
-                        
-                        if (response.status === 404) {
-                            const models = await listAvailableModels(key);
-                            const alt = models.find(m => m === "gemini-1.5-flash") || models[0];
-                            if (alt && alt !== model) return fetchWithRetry(alt, retries, delay);
-                        }
+                const parts = [{ text: prompt }, { fileData: { mimeType: audioFile.type, fileUri: audioUri } }];
+                if (noteUri) parts.push({ fileData: { mimeType: noteFile.type, fileUri: noteUri } });
 
-                        if (response.status === 503 || response.status === 429) {
-                            log(`😴 伺服器忙碌 (${response.status})，${delay/1000} 秒後重試...`);
-                            await new Promise(r => setTimeout(r, delay));
-                            delay += 2000; continue;
-                        }
-                        throw new Error(`生成失敗 (${response.status})`);
-                    }
-                    throw new Error("伺服器過載，請稍後再試。");
-                };
+                const response = await fetch(`${BASE_URL}/${API_VERSION}/models/${CURRENT_MODEL}:generateContent?key=${encodedKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: parts }], generationConfig: { responseMimeType: "application/json", temperature: 0.1 } })
+                });
 
-                const finalResponse = await fetchWithRetry(CURRENT_MODEL);
-                const result = await finalResponse.json();
-                
-                let text = result.candidates[0].content.parts[0].text;
-                log("🧪 數據解析中...");
-                try {
-                    text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-                    const parsed = JSON.parse(text);
-                    log("🎉 成功！");
-                    return parsed;
-                } catch (jsonErr) {
-                    const match = text.match(/\{[\s\S]*\}/);
-                    if (match) return JSON.parse(match[0]);
-                    throw new Error("格式解析異常。");
-                }
-            } catch (e) { log(`🛑 [錯誤] ${e.message}`); throw e; }
+                if (!response.ok) throw new Error(`AI 生成失敗 (${response.status})`);
+                const resJson = await response.json();
+                let resultText = resJson.candidates[0].content.parts[0].text;
+                resultText = resultText.replace(/```json/g, "").replace(/```/g, "").trim();
+                const data = JSON.parse(resultText.match(/\{[\s\S]*\}/)[0]);
+                data.fileName = audioFile.name;
+                data.id = Date.now();
+                return data;
+            } catch (e) { log(`🛑 錯誤: ${e.message}`); throw e; }
         }
 
         elements.transcribeBtn.onclick = async () => {
-            const key = getSavedKey();
+            const key = localStorage.getItem('gemini_api_key');
             if (!key) { elements.settingsBtn.click(); return; }
             elements.transcribeBtn.disabled = true;
-            elements.statusLabel.classList.remove('hidden', 'text-red-500');
-            elements.resultSection.classList.add('hidden');
-            elements.statusLabel.textContent = "秘書引擎開機中...";
-            
+            elements.statusLabel.classList.remove('hidden');
+
             try {
-                const data = await startTranscription(selectedFile, key);
-                generatedData = data;
-                elements.summaryContent.textContent = data.summary;
-                elements.hashtagContainer.innerHTML = "";
-                if (data.hashtags) {
-                    data.hashtags.forEach(tag => {
-                        const span = document.createElement('span');
-                        span.className = "hashtag-pill shadow-sm";
-                        span.textContent = tag.startsWith('#') ? tag : '#' + tag;
-                        elements.hashtagContainer.appendChild(span);
-                    });
-                }
-                elements.transcriptContainer.textContent = data.transcript;
-                elements.resultSection.classList.remove('hidden');
-                elements.statusLabel.classList.add('hidden');
-                setTimeout(() => window.scrollTo({ top: elements.resultSection.offsetTop - 80, behavior: 'smooth' }), 100);
+                const data = await startTranscription(selectedAudio, selectedNote, elements.rawTranscriptInput.value, key);
+                segmentQueue.push(data);
+                renderSegments();
+                elements.queueSection.classList.remove('hidden');
+                showToast("多維感官分析完成！✨");
             } catch (err) {
-                elements.statusLabel.textContent = "❌ 處理障礙，請檢查日誌。";
-                elements.statusLabel.classList.add('text-red-500');
-            } finally { elements.transcribeBtn.disabled = false; }
+                elements.statusLabel.textContent = "❌ 片段處理障礙，請檢查 Log。";
+            } finally {
+                elements.transcribeBtn.disabled = false;
+                elements.statusLabel.classList.add('hidden');
+            }
         };
 
-        elements.exportBtn.onclick = () => {
-            const tagsText = (generatedData.hashtags || []).map(t => t.startsWith('#') ? t : '#' + t).join(' ');
-            const docContent = `<html><body style="font-family: sans-serif; padding: 50px; color: #1e293b; line-height: 1.6;">
-                <h1 style="color: #0284C7; border-bottom: 4px solid #0284C7; padding-bottom: 20px; margin-bottom: 40px; font-size: 32px;">Monika AI 秘書會議報告</h1>
-                <p style="color: #64748b; font-size: 14px; margin-bottom: 40px;">產出時間：${new Date().toLocaleString()}</p>
-                <div style="background:#fefce8; padding:40px; border-radius:30px; border: 1px solid #fef08a; margin: 40px 0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-                    <h2 style="color: #92400e; margin-top: 0; font-size: 24px; border-left: 6px solid #fbbf24; padding-left: 15px;">重點摘要與行動清單</h2>
-                    <div style="font-size: 18px; margin-top: 25px; color: #451a03;">${generatedData.summary.replace(/\n/g, '<br>')}</div>
-                    <p style="margin-top: 35px; color: #0369A1; font-weight: bold; font-size: 18px; background: #e0f2fe; display: inline-block; padding: 5px 15px; border-radius: 10px;">${tagsText}</p>
+        function renderSegments() {
+            elements.segmentList.innerHTML = segmentQueue.map((seg, i) => `
+                <div class="animate-result bg-white p-12 rounded-[3.5rem] border border-slate-200 shadow-sm relative overflow-hidden">
+                    <span class="text-[10px] font-black text-sky-500 uppercase tracking-widest mb-3 block">Analysis Result Segment ${i+1}</span>
+                    <h3 class="text-2xl font-bold mb-6 text-slate-800">${seg.fileName}</h3>
+                    <div class="whitespace-pre-wrap text-xl text-slate-600 leading-relaxed mb-8">${seg.summary}</div>
+                    <div class="flex flex-wrap">${(seg.hashtags || []).map(t => `<span class="hashtag-pill">${t}</span>`).join('')}</div>
+                    <details class="mt-10 pt-8 border-t border-slate-50">
+                        <summary class="text-xs font-black text-slate-300 cursor-pointer hover:text-sky-500 uppercase tracking-widest">View Refined Transcript</summary>
+                        <div class="mt-6 text-base text-slate-400 leading-loose whitespace-pre-wrap font-medium">${seg.transcript}</div>
+                    </details>
                 </div>
-                <h2 style="color: #0f172a; font-size: 24px; margin: 60px 0 30px 0; border-left: 6px solid #0ea5e9; padding-left: 15px;">會議逐字稿全文</h2>
-                <div style="line-height: 2.2; color: #334155; font-size: 18px;">${generatedData.transcript.replace(/\n/g, '<br>')}</div>
-                <p style="text-align: center; color: #94a3b8; font-size: 12px; margin-top: 100px; border-top: 1px solid #e2e8f0; pt: 30px;">--- 由 Monika 的專屬 AI 助理 v5.1 正式旗艦版產出 ---</p>
-                </body></html>`;
-            const blob = new Blob(['\ufeff', docContent], { type: 'application/msword' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `會議紀錄_${new Date().toISOString().slice(0,10)}.doc`; a.click();
+            `).join('');
+        }
+
+        elements.settingsBtn.onclick = () => {
+            elements.apiKeyInput.value = localStorage.getItem('gemini_api_key') || "";
+            elements.notionTokenInput.value = localStorage.getItem('notion_token') || "";
+            elements.notionDbInput.value = localStorage.getItem('notion_db_id') || "";
+            elements.settingsOverlay.classList.remove('hidden');
+        };
+        elements.closeSettingsBtn.onclick = () => elements.settingsOverlay.classList.add('hidden');
+        elements.saveKeyBtn.onclick = () => {
+            const key = elements.apiKeyInput.value.trim();
+            localStorage.setItem('gemini_api_key', key);
+            localStorage.setItem('notion_token', elements.notionTokenInput.value);
+            localStorage.setItem('notion_db_id', elements.notionDbInput.value);
+            elements.settingsOverlay.classList.add('hidden');
+            autoDiscoverModel(key);
+            showToast("配置已成功更新 ✅");
         };
 
-        elements.settingsBtn.onclick = () => { elements.apiKeyInput.value = getSavedKey(); elements.settingsOverlay.classList.remove('hidden'); };
-        elements.closeSettingsBtn.onclick = () => elements.settingsOverlay.classList.add('hidden');
+        elements.copyLogBtn.onclick = async (e) => {
+            e.preventDefault();
+            const text = elements.debugConsole.innerText;
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showToast("日誌已複製到剪貼簿");
+        };
     </script>
 </body>
 </html>
