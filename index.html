@@ -11,8 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #F8FAFC; color: #1E293B; }
-        .drag-over-audio { border-color: #0EA5E9 !important; background-color: #F0F9FF !important; transform: scale(1.01); box-shadow: 0 0 40px rgba(14, 165, 233, 0.2); }
-        .drag-over-note { border-color: #10B981 !important; background-color: #ECFDF5 !important; transform: scale(1.01); box-shadow: 0 0 40px rgba(16, 185, 129, 0.2); }
+        .drag-over-audio { border-color: #0EA5E9 !important; background-color: #F0F9FF !important; transform: scale(1.01); box-shadow: 0 0 40px rgba(14, 165, 233, 0.25); }
+        .drag-over-note { border-color: #10B981 !important; background-color: #ECFDF5 !important; transform: scale(1.01); box-shadow: 0 0 40px rgba(16, 185, 129, 0.25); }
         .transcript-container::-webkit-scrollbar { width: 6px; }
         .transcript-container::-webkit-scrollbar-thumb { background-color: #CBD5E1; border-radius: 10px; }
         .debug-console { background: #0F172A; color: #38BDF8; font-family: monospace; font-size: 11px; padding: 15px; border-radius: 12px; margin-top: 15px; max-height: 250px; overflow-y: auto; line-height: 1.6; }
@@ -32,6 +32,7 @@
     <header class="bg-[#0F172A] text-white py-6 shadow-2xl border-b-4 border-sky-500 sticky top-0 z-40">
         <div class="container mx-auto px-6 flex justify-between items-center">
             <div class="flex items-center space-x-4">
+                <!-- 自定義 Gemini Speaking Icon -->
                 <div class="w-14 h-14 bg-sky-500 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-all duration-500 speaking-icon">
                     <svg width="40" height="40" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M45 15 L49 41 L75 45 L49 49 L45 75 L41 49 L15 45 L41 41 Z" fill="white" />
@@ -41,10 +42,10 @@
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold tracking-tight">Monika | AI 語音助理 <span class="text-sky-400">Pro</span></h1>
-                    <p class="text-[10px] text-slate-400 tracking-widest uppercase font-bold">Visual & Multi-Modal v5.8</p>
+                    <p class="text-[10px] text-slate-400 tracking-widest uppercase font-bold">Stable Multi-Modal v5.9</p>
                 </div>
             </div>
-            <button id="settingsBtn" class="p-2 hover:bg-slate-700 rounded-full transition-all text-slate-300">
+            <button id="settingsBtn" class="p-2 hover:bg-slate-700 rounded-full transition-all text-slate-300 active:scale-95">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
             </button>
         </div>
@@ -53,7 +54,7 @@
     <main class="flex-grow container mx-auto px-6 py-10 max-w-5xl">
         <!-- Settings Overlay -->
         <div id="settingsOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md hidden z-50 flex items-center justify-center p-6">
-            <div class="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto border border-white/20">
                 <h3 class="text-xl font-bold mb-6 text-slate-800 flex items-center">
                     <svg class="w-5 h-5 mr-2 text-sky-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
                     控制中心
@@ -66,25 +67,25 @@
                     
                     <details class="group mt-4 border border-slate-100 rounded-xl p-3">
                         <summary class="text-xs font-bold text-slate-400 cursor-pointer hover:text-sky-500 flex justify-between items-center">
-                            <span>實驗性功能：Notion 串接 (選填)</span>
+                            <span>擴充功能：Notion 串接 (選填)</span>
                             <svg class="w-4 h-4 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </summary>
                         <div class="space-y-3 mt-3">
                             <input type="password" id="notionTokenInput" placeholder="Notion Token..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs">
                             <input type="text" id="notionDbInput" placeholder="Notion Database ID..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs">
-                            <p class="text-[9px] text-slate-400">若不需要串接，保持空白即可。</p>
                         </div>
                     </details>
                 </div>
                 <div class="flex space-x-3 mt-8">
                     <button id="saveKeyBtn" class="flex-1 bg-sky-600 text-white py-3 rounded-xl font-bold hover:bg-sky-700 active:scale-95 transition-all">儲存設定</button>
-                    <button id="closeSettingsBtn" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 transition-all">取消</button>
+                    <button id="closeSettingsBtn" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 active:scale-95 transition-all">取消</button>
                 </div>
             </div>
         </div>
 
         <!-- Inputs Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+            <!-- 1. Audio Upload Area -->
             <section id="dropZone" class="bg-white border-4 border-dashed border-slate-200 rounded-[2.5rem] p-10 text-center cursor-pointer hover:border-sky-500 hover:bg-sky-50/30 transition-all group relative">
                 <input type="file" id="audioInput" class="hidden" accept="audio/*">
                 <div class="flex flex-col items-center pointer-events-none">
@@ -98,6 +99,7 @@
                 </div>
             </section>
 
+            <!-- 3. Note/Image Upload Area -->
             <section id="noteDropZone" class="bg-white border-4 border-dashed border-slate-200 rounded-[2.5rem] p-10 text-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/30 transition-all group relative">
                 <input type="file" id="noteInput" class="hidden" accept=".pdf,.docx,.txt,.jpg,.jpeg,.png">
                 <div class="flex flex-col items-center pointer-events-none">
@@ -113,7 +115,7 @@
             </section>
         </div>
 
-        <!-- Raw Transcript Area -->
+        <!-- 2. Raw Transcript Area -->
         <div class="mb-10 bg-white p-8 rounded-[3rem] border border-slate-200 shadow-sm focus-within:border-sky-500 transition-all">
             <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center">
                 <div class="w-1.5 h-4 bg-sky-500 rounded-full mr-2"></div>
@@ -126,7 +128,7 @@
             <button id="transcribeBtn" disabled class="bg-[#0F172A] text-white px-20 py-6 rounded-[2.5rem] font-bold text-2xl disabled:bg-slate-200 disabled:text-slate-400 shadow-2xl hover:bg-sky-600 transition-all active:scale-95 flex items-center group">
                 啟動全維度分析
             </button>
-            <div id="statusLabel" class="mt-8 text-sky-600 font-extrabold animate-pulse hidden text-center text-xl">小Ge 正在閱讀文件並聆聽錄音...</div>
+            <div id="statusLabel" class="mt-8 text-sky-600 font-extrabold animate-pulse hidden text-center text-xl">小Ge 正在綜合分析中...</div>
         </div>
 
         <!-- Staging Zone -->
@@ -138,8 +140,8 @@
                 </div>
                 <div class="flex space-x-4">
                     <button id="syncAllNotionBtn" class="hidden bg-sky-600 text-white px-8 py-4 rounded-[1.5rem] font-bold text-lg shadow-xl hover:bg-sky-700 transition-all transform hover:-translate-y-1">🚀 同步至 Notion</button>
-                    <button id="exportAllWordBtn" class="bg-emerald-600 text-white px-8 py-4 rounded-[1.5rem] font-bold text-lg shadow-xl hover:bg-emerald-700">📄 匯出 Word</button>
-                    <button id="clearQueueBtn" class="bg-slate-100 text-slate-400 px-6 py-4 rounded-[1.5rem] font-bold">清空</button>
+                    <button id="exportAllWordBtn" class="bg-emerald-600 text-white px-8 py-4 rounded-[1.5rem] font-bold text-lg shadow-xl hover:bg-emerald-700 transition-all">📄 匯出 Word</button>
+                    <button id="clearQueueBtn" class="bg-slate-100 text-slate-400 px-6 py-4 rounded-[1.5rem] font-bold hover:bg-red-50 hover:text-red-500 transition-all">清空</button>
                 </div>
             </div>
             <div id="segmentList" class="space-y-8"></div>
@@ -157,9 +159,11 @@
         </div>
     </main>
 
+    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-10 py-5 rounded-[1.5rem] shadow-2xl opacity-0 pointer-events-none z-[100] font-bold text-lg text-center">成功 ✨</div>
 
     <script>
+        // --- 核心配置 ---
         let CURRENT_MODEL = localStorage.getItem('last_successful_model') || "gemini-1.5-flash"; 
         const API_VERSION = "v1beta";
         const BASE_URL = "https://generativelanguage.googleapis.com";
@@ -167,108 +171,119 @@
         let selectedAudio = null;
         let selectedNote = null;
 
+        // --- 強韌元素存取機制 ---
         const elements = {
-            audioInput: document.getElementById('audioInput'),
-            noteInput: document.getElementById('noteInput'),
-            rawTranscriptInput: document.getElementById('rawTranscriptInput'),
-            transcribeBtn: document.getElementById('transcribeBtn'),
-            dropZone: document.getElementById('dropZone'),
-            noteDropZone: document.getElementById('noteDropZone'),
-            fileNameDisplay: document.getElementById('fileNameDisplay'),
-            noteFileNameDisplay: document.getElementById('noteFileNameDisplay'),
-            statusLabel: document.getElementById('statusLabel'),
-            segmentList: document.getElementById('segmentList'),
-            queueSection: document.getElementById('queueSection'),
-            debugConsole: document.getElementById('debugConsole'),
-            toast: document.getElementById('toast'),
-            settingsBtn: document.getElementById('settingsBtn'),
-            settingsOverlay: document.getElementById('settingsOverlay'),
-            saveKeyBtn: document.getElementById('saveKeyBtn'),
-            apiKeyInput: document.getElementById('apiKeyInput'),
-            notionTokenInput: document.getElementById('notionTokenInput'),
-            notionDbInput: document.getElementById('notionDbInput'),
-            syncAllNotionBtn: document.getElementById('syncAllNotionBtn'),
-            copyLogBtn: document.getElementById('copyLogBtn')
+            audioInput: () => document.getElementById('audioInput'),
+            noteInput: () => document.getElementById('noteInput'),
+            rawTranscriptInput: () => document.getElementById('rawTranscriptInput'),
+            transcribeBtn: () => document.getElementById('transcribeBtn'),
+            dropZone: () => document.getElementById('dropZone'),
+            noteDropZone: () => document.getElementById('noteDropZone'),
+            fileNameDisplay: () => document.getElementById('fileNameDisplay'),
+            noteFileNameDisplay: () => document.getElementById('noteFileNameDisplay'),
+            statusLabel: () => document.getElementById('statusLabel'),
+            segmentList: () => document.getElementById('segmentList'),
+            queueSection: () => document.getElementById('queueSection'),
+            debugConsole: () => document.getElementById('debugConsole'),
+            toast: () => document.getElementById('toast'),
+            settingsBtn: () => document.getElementById('settingsBtn'),
+            settingsOverlay: () => document.getElementById('settingsOverlay'),
+            saveKeyBtn: () => document.getElementById('saveKeyBtn'),
+            closeSettingsBtn: () => document.getElementById('closeSettingsBtn'),
+            apiKeyInput: () => document.getElementById('apiKeyInput'),
+            notionTokenInput: () => document.getElementById('notionTokenInput'),
+            notionDbInput: () => document.getElementById('notionDbInput'),
+            syncAllNotionBtn: () => document.getElementById('syncAllNotionBtn'),
+            copyLogBtn: () => document.getElementById('copyLogBtn')
         };
 
         function log(msg) {
+            const consoleEl = elements.debugConsole();
+            if (!consoleEl) return;
             const time = new Date().toLocaleTimeString();
-            elements.debugConsole.innerHTML += `<div>[${time}] ${msg}</div>`;
-            elements.debugConsole.scrollTop = elements.debugConsole.scrollHeight;
+            consoleEl.innerHTML += `<div>[${time}] ${msg}</div>`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
         }
 
         function showToast(msg) {
-            elements.toast.textContent = msg;
-            elements.toast.classList.replace('opacity-0', 'opacity-100');
-            setTimeout(() => elements.toast.classList.replace('opacity-100', 'opacity-0'), 3000);
+            const toastEl = elements.toast();
+            if (!toastEl) return;
+            toastEl.textContent = msg;
+            toastEl.classList.replace('opacity-0', 'opacity-100');
+            setTimeout(() => toastEl.classList.replace('opacity-100', 'opacity-0'), 3000);
         }
 
+        // --- 設定視窗邏輯修復 ---
+        function toggleSettings(show) {
+            const overlay = elements.settingsOverlay();
+            if (overlay) {
+                if (show) overlay.classList.remove('hidden');
+                else overlay.classList.add('hidden');
+            }
+        }
+
+        // --- Notion 按鈕顯示邏輯 ---
         function refreshNotionVisibility() {
             const token = localStorage.getItem('notion_token');
             const dbId = localStorage.getItem('notion_db_id');
-            if (token && dbId) elements.syncAllNotionBtn.classList.remove('hidden');
-            else elements.syncAllNotionBtn.classList.add('hidden');
+            const btn = elements.syncAllNotionBtn();
+            if (btn) {
+                if (token && dbId) btn.classList.remove('hidden');
+                else btn.classList.add('hidden');
+            }
         }
 
-        // --- 修正後的拖曳事件綁定 ---
+        // --- 拖放事件強固監聽 ---
         function initDragEvents() {
             const prevent = (e) => { e.preventDefault(); e.stopPropagation(); };
+            
+            const aDrop = elements.dropZone();
+            const nDrop = elements.noteDropZone();
 
-            // Audio Drop Zone
-            ['dragenter', 'dragover'].forEach(name => {
-                elements.dropZone.addEventListener(name, (e) => {
-                    prevent(e);
-                    elements.dropZone.classList.add('drag-over-audio');
-                });
-            });
-            ['dragleave', 'drop'].forEach(name => {
-                elements.dropZone.addEventListener(name, (e) => {
-                    prevent(e);
-                    elements.dropZone.classList.remove('drag-over-audio');
-                    if (name === 'drop') handleAudioFile(e.dataTransfer.files[0]);
-                });
-            });
+            if (aDrop) {
+                ['dragenter', 'dragover'].forEach(n => aDrop.addEventListener(n, (e) => { prevent(e); aDrop.classList.add('drag-over-audio'); }));
+                ['dragleave', 'drop'].forEach(n => aDrop.addEventListener(n, (e) => { prevent(e); aDrop.classList.remove('drag-over-audio'); if(n === 'drop') handleAudioFile(e.dataTransfer.files[0]); }));
+            }
 
-            // Note Drop Zone
-            ['dragenter', 'dragover'].forEach(name => {
-                elements.noteDropZone.addEventListener(name, (e) => {
-                    prevent(e);
-                    elements.noteDropZone.classList.add('drag-over-note');
-                });
-            });
-            ['dragleave', 'drop'].forEach(name => {
-                elements.noteDropZone.addEventListener(name, (e) => {
-                    prevent(e);
-                    elements.noteDropZone.classList.remove('drag-over-note');
-                    if (name === 'drop') handleNoteFile(e.dataTransfer.files[0]);
-                });
-            });
+            if (nDrop) {
+                ['dragenter', 'dragover'].forEach(n => nDrop.addEventListener(n, (e) => { prevent(e); nDrop.classList.add('drag-over-note'); }));
+                ['dragleave', 'drop'].forEach(n => nDrop.addEventListener(n, (e) => { prevent(e); nDrop.classList.remove('drag-over-note'); if(n === 'drop') handleNoteFile(e.dataTransfer.files[0]); }));
+            }
         }
 
         function handleAudioFile(file) {
             if (file && file.type.startsWith('audio/')) {
                 selectedAudio = file;
-                elements.fileNameDisplay.textContent = file.name;
-                document.getElementById('fileInfo').classList.remove('hidden');
-                elements.transcribeBtn.disabled = false;
-                log(`📁 音檔已就位：${file.name}`);
+                const display = elements.fileNameDisplay();
+                if (display) display.textContent = file.name;
+                const info = document.getElementById('fileInfo');
+                if (info) info.classList.remove('hidden');
+                const btn = elements.transcribeBtn();
+                if (btn) btn.disabled = false;
+                log(`📁 音檔就位：${file.name}`);
             }
         }
 
         function handleNoteFile(file) {
-            const valid = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'image/jpeg', 'image/png'];
-            if (file && (valid.includes(file.type) || file.name.endsWith('.docx'))) {
+            const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'image/jpeg', 'image/png'];
+            const ext = file.name.split('.').pop().toLowerCase();
+            const isValidExt = ['pdf', 'docx', 'txt', 'jpg', 'jpeg', 'png'].includes(ext);
+
+            if (file && (validTypes.includes(file.type) || isValidExt)) {
                 selectedNote = file;
-                elements.noteFileNameDisplay.textContent = file.name;
-                document.getElementById('noteFileInfo').classList.remove('hidden');
-                log(`📖 筆記/圖片就位：${file.name}`);
+                const display = elements.noteFileNameDisplay();
+                if (display) display.textContent = file.name;
+                const info = document.getElementById('noteFileInfo');
+                if (info) info.classList.remove('hidden');
+                log(`📖 參考素材就位：${file.name}`);
             } else if (file) {
-                alert("不支援此檔案格式喔！");
+                alert("目前僅支援 PDF, DOCX, TXT 及 JPG/PNG 圖片喔！");
             }
         }
 
+        // --- 大腦偵測 ---
         async function autoDiscoverModel(key) {
-            log("🔍 正在預先偵測您的可用大腦...");
+            log("🔍 正在初始化大腦通訊...");
             try {
                 const res = await fetch(`${BASE_URL}/${API_VERSION}/models?key=${encodeURIComponent(key)}`);
                 const data = await res.json();
@@ -279,30 +294,66 @@
                     if (best) {
                         CURRENT_MODEL = best;
                         localStorage.setItem('last_successful_model', best);
-                        log(`🚀 已鎖定大腦：${best}`);
+                        log(`🚀 已連接大腦：${best}`);
                     }
                 }
-            } catch (e) { log("❌ 大腦偵測異常"); }
+            } catch (e) { log("⚠️ 大腦通訊微弱，啟動穩定模式。"); }
         }
 
-        window.onload = () => {
+        // --- 核心初始化 ---
+        window.addEventListener('load', () => {
             const key = localStorage.getItem('gemini_api_key');
             if (key) autoDiscoverModel(key);
+            
+            // 綁定基礎事件
+            const sBtn = elements.settingsBtn();
+            if (sBtn) sBtn.onclick = () => {
+                const keyInput = elements.apiKeyInput();
+                const nToken = elements.notionTokenInput();
+                const nDb = elements.notionDbInput();
+                if (keyInput) keyInput.value = localStorage.getItem('gemini_api_key') || "";
+                if (nToken) nToken.value = localStorage.getItem('notion_token') || "";
+                if (nDb) nDb.value = localStorage.getItem('notion_db_id') || "";
+                toggleSettings(true);
+            };
+
+            const cBtn = elements.closeSettingsBtn();
+            if (cBtn) cBtn.onclick = (e) => { e.preventDefault(); toggleSettings(false); };
+
+            const saveBtn = elements.saveKeyBtn();
+            if (saveBtn) saveBtn.onclick = () => {
+                const val = elements.apiKeyInput().value.trim();
+                localStorage.setItem('gemini_api_key', val);
+                localStorage.setItem('notion_token', elements.notionTokenInput().value.trim());
+                localStorage.setItem('notion_db_id', elements.notionDbInput().value.trim());
+                toggleSettings(false);
+                if (val) autoDiscoverModel(val);
+                refreshNotionVisibility();
+                showToast("設定已儲存 ✅");
+            };
+
+            const aDrop = elements.dropZone();
+            if (aDrop) aDrop.onclick = () => elements.audioInput().click();
+            const aIn = elements.audioInput();
+            if (aIn) aIn.onchange = (e) => handleAudioFile(e.target.files[0]);
+
+            const nDrop = elements.noteDropZone();
+            if (nDrop) nDrop.onclick = () => elements.noteInput().click();
+            const nIn = elements.noteInput();
+            if (nIn) nIn.onchange = (e) => handleNoteFile(e.target.files[0]);
+
             refreshNotionVisibility();
             initDragEvents();
+            log("⚓ Monika 船長，這艘船已準備好啟航！");
+        });
 
-            elements.dropZone.onclick = () => elements.audioInput.click();
-            elements.audioInput.onchange = (e) => handleAudioFile(e.target.files[0]);
-            elements.noteDropZone.onclick = () => elements.noteInput.click();
-            elements.noteInput.onchange = (e) => handleNoteFile(e.target.files[0]);
-        };
-
+        // --- 生成邏輯 ---
         async function startTranscription(audioFile, noteFile, rawText, key) {
             const encodedKey = encodeURIComponent(key.trim());
             try {
                 let noteUri = null;
                 if (noteFile) {
-                    log(`1️⃣ 片段素材同步中...`);
+                    log(`1️⃣ 筆記/圖片同步中...`);
                     const nUpload = await fetch(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'X-Goog-Upload-Header-Content-Length': noteFile.size, 'X-Goog-Upload-Header-Content-Type': noteFile.type },
@@ -313,8 +364,7 @@
                     noteUri = nRes.file.uri;
                 }
 
-                log(`2️⃣ 傳送音訊數據...`);
-                elements.statusLabel.textContent = "與雲端同步音軌中...";
+                log(`2️⃣ 音軌同步中...`);
                 const aUpload = await fetch(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'X-Goog-Upload-Header-Content-Length': audioFile.size, 'X-Goog-Upload-Header-Content-Type': audioFile.type },
@@ -331,14 +381,14 @@
                     if (status.state === "ACTIVE") break;
                 }
 
-                log(`3️⃣ 結合多維資料產出報告 (10s 緩衝)...`);
+                log(`3️⃣ 分析引擎啟動 (10s 緩衝)...`);
                 await new Promise(r => setTimeout(r, 10000));
 
-                const prompt = `妳是 Monika 的專屬 AI 祕書。請結合音檔內容與提供的【參考素材】（可能是文件或照片）。
-                如果照片是會議白板、筆記，請進行文字識別。
-                產出繁體中文：1. 重點摘要 2. 行動決策清單 3. 精準Hashtags 4. 精煉後的正式逐字稿。
-                初步參考文字：${rawText || "無"}。
-                妳必須回傳 JSON：{ "summary": "內容", "hashtags": ["#標籤"], "transcript": "內容" }。`;
+                const prompt = `妳是 Monika 的專屬祕書小Ge。結合音檔與提供的【參考素材】（文件或照片）。
+                若素材是圖片，請先辨識其中文字。
+                產出繁體中文：1. 重點摘要 2. 行動決策 3. 3-5個精準標籤 4. 精煉逐字稿。
+                初步參考：${rawText || "無"}。
+                回傳 JSON：{ "summary": "內容", "hashtags": ["#標籤"], "transcript": "內容" }。`;
 
                 const parts = [{ text: prompt }, { fileData: { mimeType: audioFile.type, fileUri: audioUri } }];
                 if (noteUri) parts.push({ fileData: { mimeType: noteFile.type, fileUri: noteUri } });
@@ -358,28 +408,29 @@
             } catch (e) { log(`🛑 錯誤: ${e.message}`); throw e; }
         }
 
-        elements.transcribeBtn.onclick = async () => {
+        const tBtn = elements.transcribeBtn();
+        if (tBtn) tBtn.onclick = async () => {
             const key = localStorage.getItem('gemini_api_key');
-            if (!key) { elements.settingsBtn.click(); return; }
-            elements.transcribeBtn.disabled = true;
-            elements.statusLabel.classList.remove('hidden');
+            if (!key) { elements.settingsBtn().click(); return; }
+            tBtn.disabled = true;
+            elements.statusLabel().classList.remove('hidden');
 
             try {
-                const data = await startTranscription(selectedAudio, selectedNote, elements.rawTranscriptInput.value, key);
+                const data = await startTranscription(selectedAudio, selectedNote, elements.rawTranscriptInput().value, key);
                 segmentQueue.push(data);
                 renderSegments();
-                elements.queueSection.classList.remove('hidden');
+                elements.queueSection().classList.remove('hidden');
                 showToast("全維度分析完成！✨");
             } catch (err) {
-                elements.statusLabel.textContent = "❌ 片段處理障礙，請檢查 Log。";
+                elements.statusLabel().textContent = "❌ 片段處理障礙，請檢查 Log。";
             } finally {
-                elements.transcribeBtn.disabled = false;
-                elements.statusLabel.classList.add('hidden');
+                tBtn.disabled = false;
+                elements.statusLabel().classList.add('hidden');
             }
         };
 
         function renderSegments() {
-            elements.segmentList.innerHTML = segmentQueue.map((seg, i) => `
+            elements.segmentList().innerHTML = segmentQueue.map((seg, i) => `
                 <div class="animate-result bg-white p-12 rounded-[3.5rem] border border-slate-200 shadow-sm relative overflow-hidden">
                     <h3 class="text-2xl font-bold mb-6 text-slate-800">${seg.fileName}</h3>
                     <div class="whitespace-pre-wrap text-xl text-slate-600 leading-relaxed mb-8">${seg.summary}</div>
@@ -392,27 +443,10 @@
             `).join('');
         }
 
-        elements.settingsBtn.onclick = () => {
-            elements.apiKeyInput.value = localStorage.getItem('gemini_api_key') || "";
-            elements.notionTokenInput.value = localStorage.getItem('notion_token') || "";
-            elements.notionDbInput.value = localStorage.getItem('notion_db_id') || "";
-            elements.settingsOverlay.classList.remove('hidden');
-        };
-        elements.closeSettingsBtn.onclick = () => elements.settingsOverlay.classList.add('hidden');
-        elements.saveKeyBtn.onclick = () => {
-            const key = elements.apiKeyInput.value.trim();
-            localStorage.setItem('gemini_api_key', key);
-            localStorage.setItem('notion_token', elements.notionTokenInput.value.trim());
-            localStorage.setItem('notion_db_id', elements.notionDbInput.value.trim());
-            elements.settingsOverlay.classList.add('hidden');
-            autoDiscoverModel(key);
-            refreshNotionVisibility();
-            showToast("配置已儲存 ✅");
-        };
-
-        elements.copyLogBtn.onclick = async (e) => {
+        const logBtn = elements.copyLogBtn();
+        if (logBtn) logBtn.onclick = async (e) => {
             e.preventDefault();
-            const text = elements.debugConsole.innerText;
+            const text = elements.debugConsole().innerText;
             const textArea = document.createElement("textarea");
             textArea.value = text;
             textArea.style.position = "fixed";
