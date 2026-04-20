@@ -41,7 +41,7 @@
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold tracking-tight">Monika | AI 語音助理 <span class="text-sky-400">Pro</span></h1>
-                    <p class="text-[10px] text-slate-400 tracking-widest uppercase font-bold italic">Navigator Resilient v6.0</p>
+                    <p class="text-[10px] text-slate-400 tracking-widest uppercase font-bold italic">Navigator Ultra-Resilient v6.1</p>
                 </div>
             </div>
             <button id="settingsBtn" class="p-2 hover:bg-slate-700 rounded-full transition-all text-slate-300 active:scale-90">
@@ -84,6 +84,7 @@
 
         <!-- Inputs Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+            <!-- 1. Audio Upload Area -->
             <section id="dropZone" class="bg-white border-4 border-dashed border-slate-200 rounded-[2.5rem] p-10 text-center cursor-pointer hover:border-sky-500 hover:bg-sky-50/30 transition-all group relative">
                 <input type="file" id="audioInput" class="hidden" accept="audio/*">
                 <div class="flex flex-col items-center pointer-events-none">
@@ -97,6 +98,7 @@
                 </div>
             </section>
 
+            <!-- 3. Note/Image Upload Area -->
             <section id="noteDropZone" class="bg-white border-4 border-dashed border-slate-200 rounded-[2.5rem] p-10 text-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/30 transition-all group relative">
                 <input type="file" id="noteInput" class="hidden" accept=".pdf,.docx,.txt,.jpg,.jpeg,.png">
                 <div class="flex flex-col items-center pointer-events-none">
@@ -112,7 +114,7 @@
             </section>
         </div>
 
-        <!-- Raw Transcript Area -->
+        <!-- 2. Raw Transcript Area -->
         <div class="mb-10 bg-white p-8 rounded-[3rem] border border-slate-200 shadow-sm focus-within:border-sky-500 transition-all">
             <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center">
                 <div class="w-1.5 h-4 bg-sky-500 rounded-full mr-2"></div>
@@ -125,7 +127,7 @@
             <button id="transcribeBtn" disabled class="bg-[#0F172A] text-white px-20 py-6 rounded-[2.5rem] font-bold text-2xl disabled:bg-slate-200 disabled:text-slate-400 shadow-2xl hover:bg-sky-600 transition-all active:scale-95 flex items-center group">
                 啟動全維度分析
             </button>
-            <div id="statusLabel" class="mt-8 text-sky-600 font-extrabold animate-pulse hidden text-center text-xl">小Ge 正在綜合分析中...</div>
+            <div id="statusLabel" class="mt-8 text-sky-600 font-extrabold animate-pulse hidden text-center text-xl tracking-tight">小Ge 正在綜合分析中...</div>
         </div>
 
         <!-- Staging Zone -->
@@ -133,7 +135,7 @@
             <div class="flex justify-between items-end border-b-2 border-slate-100 pb-8">
                 <div>
                     <h2 class="text-4xl font-extrabold text-slate-800 tracking-tighter">🗂️ 處理成果暫存</h2>
-                    <p class="text-slate-400 text-lg mt-2 font-medium italic">已處理片段，可進行最後合併</p>
+                    <p class="text-slate-400 text-lg mt-2 font-medium italic">片段已完成，可隨時批次匯出</p>
                 </div>
                 <div class="flex space-x-4">
                     <button id="syncAllNotionBtn" class="hidden bg-sky-600 text-white px-8 py-4 rounded-[1.5rem] font-bold text-lg shadow-xl hover:bg-sky-700 transition-all transform hover:-translate-y-1">🚀 同步至 Notion</button>
@@ -148,7 +150,7 @@
         <div id="debugArea" class="mt-24 pt-12 border-t border-slate-200/60">
             <details class="group">
                 <summary class="flex justify-between items-center cursor-pointer text-slate-300 hover:text-slate-500 transition-all">
-                    <span class="text-[10px] font-black tracking-[0.4em] uppercase">Navigator Console / Debug</span>
+                    <span class="text-[10px] font-black tracking-[0.4em] uppercase">Navigator Ultra Console / Debug</span>
                     <button id="copyLogBtn" class="text-[9px] bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-300 font-bold">COPY LOG</button>
                 </summary>
                 <div id="debugConsole" class="debug-console">等待 Monika 下達指令...</div>
@@ -160,7 +162,7 @@
     <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-10 py-5 rounded-[1.5rem] shadow-2xl opacity-0 pointer-events-none z-[100] font-bold text-lg text-center">成功 ✨</div>
 
     <script>
-        // --- Navigator Resilient Config ---
+        // --- 核心配置 ---
         let CURRENT_MODEL = localStorage.getItem('last_successful_model') || "gemini-1.5-flash"; 
         const API_VERSION = "v1beta";
         const BASE_URL = "https://generativelanguage.googleapis.com";
@@ -168,7 +170,6 @@
         let selectedAudio = null;
         let selectedNote = null;
 
-        // --- 強韌元素獲取 Helper ---
         const $ = (id) => document.getElementById(id);
         const elements = {
             audioInput: () => $('audioInput'),
@@ -192,9 +193,7 @@
             notionTokenInput: () => $('notionTokenInput'),
             notionDbInput: () => $('notionDbInput'),
             syncAllNotionBtn: () => $('syncAllNotionBtn'),
-            copyLogBtn: () => $('copyLogBtn'),
-            fileInfo: () => $('fileInfo'),
-            noteFileInfo: () => $('noteFileInfo')
+            copyLogBtn: () => $('copyLogBtn')
         };
 
         function log(msg) {
@@ -213,19 +212,19 @@
             setTimeout(() => toastEl.classList.replace('opacity-100', 'opacity-0'), 3000);
         }
 
-        // --- 強韌 Fetch 救援隊 (自動重試機制) ---
+        // --- 強韌 Fetch 救援小隊 ---
         async function fetchWithRetry(url, options, retries = 3) {
             try {
                 const response = await fetch(url, options);
                 if (!response.ok && retries > 0 && response.status !== 404) {
-                    log(`⚠️ 連線異常 (HTTP ${response.status})，正在重試...`);
+                    log(`⚠️ 連線異常 (HTTP ${response.status})，2秒後自動重試...`);
                     await new Promise(r => setTimeout(r, 2000));
                     return fetchWithRetry(url, options, retries - 1);
                 }
                 return response;
             } catch (err) {
                 if (retries > 0) {
-                    log(`🔌 網路抖動，正在救援連線 (${retries})...`);
+                    log(`🔌 傳輸亂流，正在救援連線 (${retries})...`);
                     await new Promise(r => setTimeout(r, 2000));
                     return fetchWithRetry(url, options, retries - 1);
                 }
@@ -233,27 +232,16 @@
             }
         }
 
-        // --- 大腦自動定位 5.0 ---
-        async function autoDiscoverModel(key) {
-            if (!key) return;
-            log("🔍 領航者正在定位大腦座標...");
-            try {
-                const res = await fetch(`${BASE_URL}/${API_VERSION}/models?key=${encodeURIComponent(key)}`);
-                const data = await res.json();
-                if (data.models) {
-                    const names = data.models.map(m => m.name.replace("models/", ""));
-                    const best = names.find(m => m.includes("2.5-flash")) || 
-                                names.find(m => m.includes("1.5-flash")) || names[0];
-                    if (best) {
-                        CURRENT_MODEL = best;
-                        localStorage.setItem('last_successful_model', best);
-                        log(`🚀 大腦座標已鎖定：${best}`);
-                    }
-                }
-            } catch (e) { log("🛰️ 座標偵測受限，採用穩定航線模式。"); }
+        function refreshNotionVisibility() {
+            const token = localStorage.getItem('notion_token');
+            const dbId = localStorage.getItem('notion_db_id');
+            const btn = elements.syncAllNotionBtn();
+            if (btn) {
+                if (token && dbId) btn.classList.remove('hidden');
+                else btn.classList.add('hidden');
+            }
         }
 
-        // --- 拖放事件強固化 ---
         function initDragEvents() {
             const prevent = (e) => { e.preventDefault(); e.stopPropagation(); };
             
@@ -276,7 +264,7 @@
                 selectedAudio = file;
                 const display = elements.fileNameDisplay();
                 if (display) display.textContent = file.name;
-                const info = elements.fileInfo();
+                const info = document.getElementById('fileInfo');
                 if (info) info.classList.remove('hidden');
                 const btn = elements.transcribeBtn();
                 if (btn) btn.disabled = false;
@@ -293,7 +281,7 @@
                 selectedNote = file;
                 const display = elements.noteFileNameDisplay();
                 if (display) display.textContent = file.name;
-                const info = elements.noteFileInfo();
+                const info = document.getElementById('noteFileInfo');
                 if (info) info.classList.remove('hidden');
                 log(`📖 參考素材就位：${file.name}`);
             } else if (file) {
@@ -301,7 +289,25 @@
             }
         }
 
-        // --- 生命週期與事件綁定 ---
+        async function autoDiscoverModel(key) {
+            if (!key) return;
+            log("🔍 領航者正在掃描大腦座標...");
+            try {
+                const res = await fetch(`${BASE_URL}/${API_VERSION}/models?key=${encodeURIComponent(key)}`);
+                const data = await res.json();
+                if (data.models) {
+                    const names = data.models.map(m => m.name.replace("models/", ""));
+                    const best = names.find(m => m.includes("2.5-flash")) || 
+                                names.find(m => m.includes("1.5-flash")) || names[0];
+                    if (best) {
+                        CURRENT_MODEL = best;
+                        localStorage.setItem('last_successful_model', best);
+                        log(`🚀 大腦座標鎖定：${best}`);
+                    }
+                }
+            } catch (e) { log("🛰️ 通訊微弱，啟動穩定穩定航線模式。"); }
+        }
+
         window.addEventListener('load', () => {
             const key = localStorage.getItem('gemini_api_key');
             if (key) autoDiscoverModel(key);
@@ -323,7 +329,7 @@
                 elements.settingsOverlay().classList.add('hidden');
                 if (val) autoDiscoverModel(val);
                 refreshNotionVisibility();
-                showToast("導航參數已儲存 ✅");
+                showToast("導航參數更新 ✅");
             };
 
             elements.dropZone().onclick = () => elements.audioInput().click();
@@ -333,27 +339,17 @@
 
             refreshNotionVisibility();
             initDragEvents();
-            log("⚓ Navigator 系統初始化完成，隨時準備起航。");
+            log("⚓ 導航系統初始化完成。");
         });
-
-        function refreshNotionVisibility() {
-            const token = localStorage.getItem('notion_token');
-            const dbId = localStorage.getItem('notion_db_id');
-            const btn = elements.syncAllNotionBtn();
-            if (btn) {
-                if (token && dbId) btn.classList.remove('hidden');
-                else btn.classList.add('hidden');
-            }
-        }
 
         // --- 核心生成引擎 ---
         async function startTranscription(audioFile, noteFile, rawText, key) {
             const encodedKey = encodeURIComponent(key.trim());
             try {
                 let noteUri = null;
-                // 1. 同步筆記 (加上強韌連線機制)
+                // 1. 同步筆記素材 (強韌連線)
                 if (noteFile) {
-                    log(`1️⃣ 片段素材同步中...`);
+                    log(`1️⃣ 筆記/圖片同步中...`);
                     const nUpload = await fetchWithRetry(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'X-Goog-Upload-Header-Content-Length': noteFile.size, 'X-Goog-Upload-Header-Content-Type': noteFile.type },
@@ -362,11 +358,18 @@
                     const nUrl = nUpload.headers.get('X-Goog-Upload-URL');
                     const nRes = await (await fetchWithRetry(nUrl, { method: 'PUT', body: noteFile })).json();
                     noteUri = nRes.file.uri;
+                    log(`✅ 參考素材上傳完成。`);
                 }
 
-                // 2. 上傳音檔 (順序佇列，防止擠爆)
+                // 2. 冷靜期 2 秒 (緩衝網路通道)
+                if (noteFile) {
+                    log(`⌛ 緩衝 2 秒清空連線通道...`);
+                    await new Promise(r => setTimeout(r, 2000));
+                }
+
+                // 3. 上傳音檔
                 log(`2️⃣ 傳送音訊大數據...`);
-                elements.statusLabel().textContent = "正在同步位元數據到雲端...";
+                elements.statusLabel().textContent = "正在同步錄音位元數據...";
                 const aUpload = await fetchWithRetry(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'X-Goog-Upload-Header-Content-Length': audioFile.size, 'X-Goog-Upload-Header-Content-Type': audioFile.type },
@@ -388,9 +391,9 @@
 
                 const prompt = `妳是 Monika 的專屬祕書小Ge。
                 請精確聽辨錄音，並結合【參考素材】（文件或照片）中的背景知識進行對齊。
-                若素材是圖片，請辨識其文字內容。
-                產出繁體中文：1. 重點摘要 2. 行動決策 3. 3-5個重點Hashtags 4. 精煉逐字稿。
-                初步參考：${rawText || "無"}。
+                若素材是圖片，請先辨識其文字內容。
+                產出繁體中文：1. 重點摘要 2. 行動決策 3. 3-5個精準Hashtags 4. 精煉逐字稿。
+                初步參考：${rawTranscriptInput.value || "無"}。
                 妳必須回傳精確 JSON：{ "summary": "內容", "hashtags": ["#標籤"], "transcript": "內容" }。`;
 
                 const parts = [{ text: prompt }, { fileData: { mimeType: audioFile.type, fileUri: audioUri } }];
@@ -408,7 +411,7 @@
                 const data = JSON.parse(text.match(/\{[\s\S]*\}/)[0]);
                 data.fileName = audioFile.name;
                 return data;
-            } catch (e) { log(`🛑 航線受阻: ${e.message}`); throw e; }
+            } catch (e) { log(`🛑 傳輸中斷: ${e.message}`); throw e; }
         }
 
         elements.transcribeBtn().onclick = async () => {
@@ -423,9 +426,9 @@
                 segmentQueue.push(data);
                 renderSegments();
                 elements.queueSection().classList.remove('hidden');
-                showToast("分析引擎任務達成！✨");
+                showToast("任務達成！✨");
             } catch (err) {
-                elements.statusLabel().textContent = "❌ 領航中斷，請確認 Log 並重試。";
+                elements.statusLabel().textContent = "❌ 傳輸異常，請重新點擊嘗試。";
             } finally {
                 btn.disabled = false;
                 elements.statusLabel().classList.add('hidden');
@@ -435,7 +438,7 @@
         function renderSegments() {
             elements.segmentList().innerHTML = segmentQueue.map((seg, i) => `
                 <div class="animate-result bg-white p-12 rounded-[3.5rem] border border-slate-200 shadow-sm relative overflow-hidden">
-                    <span class="text-[10px] font-black text-sky-500 uppercase tracking-widest mb-3 block">Analysis Result #${i+1}</span>
+                    <span class="text-[10px] font-black text-sky-500 uppercase tracking-widest mb-3 block">Result Segment #${i+1}</span>
                     <h3 class="text-2xl font-bold mb-6 text-slate-800">${seg.fileName}</h3>
                     <div class="whitespace-pre-wrap text-xl text-slate-600 leading-relaxed mb-8">${seg.summary}</div>
                     <div class="flex flex-wrap">${(seg.hashtags || []).map(t => `<span class="hashtag-pill">${t}</span>`).join('')}</div>
@@ -457,7 +460,7 @@
             textArea.select();
             document.execCommand('copy');
             document.body.removeChild(textArea);
-            showToast("日誌已複製到剪貼簿");
+            showToast("日誌已複製");
         };
     </script>
 </body>
