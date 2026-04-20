@@ -11,8 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #F8FAFC; color: #1E293B; }
-        .drag-over-audio { border-color: #0EA5E9 !important; background-color: #F0F9FF !important; transform: scale(1.01); box-shadow: 0 0 40px rgba(14, 165, 233, 0.25); }
-        .drag-over-note { border-color: #10B981 !important; background-color: #ECFDF5 !important; transform: scale(1.01); box-shadow: 0 0 40px rgba(16, 185, 129, 0.25); }
+        .drag-over-audio { border-color: #0EA5E9 !important; background-color: #F0F9FF !important; transform: scale(1.02); box-shadow: 0 0 50px rgba(14, 165, 233, 0.3); }
+        .drag-over-note { border-color: #10B981 !important; background-color: #ECFDF5 !important; transform: scale(1.02); box-shadow: 0 0 50px rgba(16, 185, 129, 0.3); }
         .transcript-container::-webkit-scrollbar { width: 6px; }
         .transcript-container::-webkit-scrollbar-thumb { background-color: #CBD5E1; border-radius: 10px; }
         .debug-console { background: #0F172A; color: #38BDF8; font-family: monospace; font-size: 11px; padding: 15px; border-radius: 12px; margin-top: 15px; max-height: 250px; overflow-y: auto; line-height: 1.6; }
@@ -23,16 +23,26 @@
         .animate-result { animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
         #toast { transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
         .speaking-icon svg { animation: pulse-wave 2s infinite ease-in-out; }
-        @keyframes pulse-wave { 0% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 0.7; } }
+        @keyframes pulse-wave { 0% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); opacity: 0.7; } }
+        /* 全螢幕拖曳遮罩 */
+        #global-drag-overlay { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); border: 10px dashed #0EA5E9; justify-content: center; align-items: center; color: white; flex-direction: column; pointer-events: none; }
+        .drop-hint { font-size: 3rem; font-weight: 900; margin-top: 1.5rem; text-shadow: 0 5px 15px rgba(0,0,0,0.5); }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- 全域拖曳遮罩 (真．皮膚監聽) -->
+    <div id="global-drag-overlay">
+        <svg class="w-28 h-28 text-sky-400 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+        <div class="drop-hint">Monika, 投件至此！</div>
+        <p class="text-sky-200 mt-6 text-2xl font-bold tracking-wider">小Ge 全螢幕神經感應中...</p>
+    </div>
 
     <!-- Header -->
     <header class="bg-[#0F172A] text-white py-6 shadow-2xl border-b-4 border-sky-500 sticky top-0 z-40">
         <div class="container mx-auto px-6 flex justify-between items-center">
             <div class="flex items-center space-x-4">
-                <div class="w-14 h-14 bg-sky-500 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-all duration-500 speaking-icon cursor-help" title="小Ge 正在為您待命">
+                <div id="ge-brand-icon" class="w-14 h-14 bg-sky-500 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-all duration-500 speaking-icon">
                     <svg width="40" height="40" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M45 15 L49 41 L75 45 L49 49 L45 75 L41 49 L15 45 L41 41 Z" fill="white" />
                         <path d="M65 30 Q80 45 65 60" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" />
@@ -41,7 +51,7 @@
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold tracking-tight">Monika | AI 語音助理 <span class="text-sky-400">Pro</span></h1>
-                    <p class="text-[10px] text-slate-400 tracking-widest uppercase font-bold italic">Navigator Ultra-Resilient v6.1</p>
+                    <p class="text-[10px] text-slate-400 tracking-widest uppercase font-bold italic">Port Unlocked Edition v6.3</p>
                 </div>
             </div>
             <button id="settingsBtn" class="p-2 hover:bg-slate-700 rounded-full transition-all text-slate-300 active:scale-90">
@@ -53,7 +63,7 @@
     <main class="flex-grow container mx-auto px-6 py-10 max-w-5xl">
         <!-- Settings Overlay -->
         <div id="settingsOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md hidden z-50 flex items-center justify-center p-6">
-            <div class="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto border border-white/20">
+            <div class="bg-white rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto border border-white/20">
                 <h3 class="text-xl font-bold mb-6 text-slate-800 flex items-center">
                     <svg class="w-5 h-5 mr-2 text-sky-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
                     控制中心
@@ -76,7 +86,7 @@
                     </details>
                 </div>
                 <div class="flex space-x-3 mt-8">
-                    <button id="saveKeyBtn" class="flex-1 bg-sky-600 text-white py-3 rounded-xl font-bold hover:bg-sky-700 active:scale-95 transition-all">儲存設定</button>
+                    <button id="saveKeyBtn" class="flex-1 bg-sky-600 text-white py-3 rounded-xl font-bold hover:bg-sky-700 active:scale-95 transition-all shadow-lg">儲存設定</button>
                     <button id="closeSettingsBtn" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 active:scale-95 transition-all">取消</button>
                 </div>
             </div>
@@ -84,7 +94,6 @@
 
         <!-- Inputs Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-            <!-- 1. Audio Upload Area -->
             <section id="dropZone" class="bg-white border-4 border-dashed border-slate-200 rounded-[2.5rem] p-10 text-center cursor-pointer hover:border-sky-500 hover:bg-sky-50/30 transition-all group relative">
                 <input type="file" id="audioInput" class="hidden" accept="audio/*">
                 <div class="flex flex-col items-center pointer-events-none">
@@ -98,7 +107,6 @@
                 </div>
             </section>
 
-            <!-- 3. Note/Image Upload Area -->
             <section id="noteDropZone" class="bg-white border-4 border-dashed border-slate-200 rounded-[2.5rem] p-10 text-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/30 transition-all group relative">
                 <input type="file" id="noteInput" class="hidden" accept=".pdf,.docx,.txt,.jpg,.jpeg,.png">
                 <div class="flex flex-col items-center pointer-events-none">
@@ -106,7 +114,7 @@
                         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 1 0 01-2 2z"></path></svg>
                     </div>
                     <h2 class="text-xl font-bold text-slate-700 tracking-tight">3. 筆記或照片 (選填)</h2>
-                    <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold">PDF / DOCX / JPG / PNG</p>
+                    <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-widest">PDF / DOCX / JPG / PNG</p>
                     <div id="noteFileInfo" class="hidden mt-4 animate-bounce">
                         <span id="noteFileNameDisplay" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-lg border border-emerald-400"></span>
                     </div>
@@ -114,20 +122,20 @@
             </section>
         </div>
 
-        <!-- 2. Raw Transcript Area -->
+        <!-- 2. Text Input Area -->
         <div class="mb-10 bg-white p-8 rounded-[3rem] border border-slate-200 shadow-sm focus-within:border-sky-500 transition-all">
             <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center">
                 <div class="w-1.5 h-4 bg-sky-500 rounded-full mr-2"></div>
                 2. 粘貼初步逐字稿 (選填)
             </label>
-            <textarea id="rawTranscriptInput" placeholder="輔助 AI 對齊內容..." class="w-full h-32 text-slate-600 outline-none resize-none text-sm leading-relaxed"></textarea>
+            <textarea id="rawTranscriptInput" placeholder="讓 AI 做精準術語對齊..." class="w-full h-32 text-slate-600 outline-none resize-none text-sm leading-relaxed"></textarea>
         </div>
 
         <div class="mt-14 flex flex-col items-center">
-            <button id="transcribeBtn" disabled class="bg-[#0F172A] text-white px-20 py-6 rounded-[2.5rem] font-bold text-2xl disabled:bg-slate-200 disabled:text-slate-400 shadow-2xl hover:bg-sky-600 transition-all active:scale-95 flex items-center group">
-                啟動全維度分析
+            <button id="transcribeBtn" disabled class="bg-[#0F172A] text-white px-20 py-6 rounded-[2.5rem] font-bold text-2xl disabled:bg-slate-200 disabled:text-slate-400 shadow-2xl hover:bg-sky-600 transition-all active:scale-95 flex items-center group relative overflow-hidden">
+                <span class="relative z-10">啟動領航全維度分析</span>
             </button>
-            <div id="statusLabel" class="mt-8 text-sky-600 font-extrabold animate-pulse hidden text-center text-xl tracking-tight">小Ge 正在綜合分析中...</div>
+            <div id="statusLabel" class="mt-8 text-sky-600 font-extrabold animate-pulse hidden text-center text-xl tracking-tight">小Ge 正在破除網路障礙中...</div>
         </div>
 
         <!-- Staging Zone -->
@@ -135,11 +143,11 @@
             <div class="flex justify-between items-end border-b-2 border-slate-100 pb-8">
                 <div>
                     <h2 class="text-4xl font-extrabold text-slate-800 tracking-tighter">🗂️ 處理成果暫存</h2>
-                    <p class="text-slate-400 text-lg mt-2 font-medium italic">片段已完成，可隨時批次匯出</p>
+                    <p class="text-slate-400 text-lg mt-2 font-medium italic">數據已同步，可批次匯出</p>
                 </div>
                 <div class="flex space-x-4">
-                    <button id="syncAllNotionBtn" class="hidden bg-sky-600 text-white px-8 py-4 rounded-[1.5rem] font-bold text-lg shadow-xl hover:bg-sky-700 transition-all transform hover:-translate-y-1">🚀 同步至 Notion</button>
-                    <button id="exportAllWordBtn" class="bg-emerald-600 text-white px-8 py-4 rounded-[1.5rem] font-bold text-lg shadow-xl hover:bg-emerald-700 transition-all">📄 匯出 Word</button>
+                    <button id="syncAllNotionBtn" class="hidden bg-sky-600 text-white px-8 py-4 rounded-[1.5rem] font-bold text-lg shadow-xl">🚀 同步至 Notion</button>
+                    <button id="exportAllWordBtn" class="bg-emerald-600 text-white px-8 py-4 rounded-[1.5rem] font-bold text-lg shadow-xl">📄 匯出 Word</button>
                     <button id="clearQueueBtn" class="bg-slate-100 text-slate-400 px-6 py-4 rounded-[1.5rem] font-bold hover:bg-red-50 hover:text-red-500 transition-all">清空</button>
                 </div>
             </div>
@@ -150,7 +158,7 @@
         <div id="debugArea" class="mt-24 pt-12 border-t border-slate-200/60">
             <details class="group">
                 <summary class="flex justify-between items-center cursor-pointer text-slate-300 hover:text-slate-500 transition-all">
-                    <span class="text-[10px] font-black tracking-[0.4em] uppercase">Navigator Ultra Console / Debug</span>
+                    <span class="text-[10px] font-black tracking-[0.4em] uppercase">Navigator Unlocked Console / Debug</span>
                     <button id="copyLogBtn" class="text-[9px] bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-300 font-bold">COPY LOG</button>
                 </summary>
                 <div id="debugConsole" class="debug-console">等待 Monika 下達指令...</div>
@@ -158,11 +166,9 @@
         </div>
     </main>
 
-    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-10 py-5 rounded-[1.5rem] shadow-2xl opacity-0 pointer-events-none z-[100] font-bold text-lg text-center">成功 ✨</div>
 
     <script>
-        // --- 核心配置 ---
         let CURRENT_MODEL = localStorage.getItem('last_successful_model') || "gemini-1.5-flash"; 
         const API_VERSION = "v1beta";
         const BASE_URL = "https://generativelanguage.googleapis.com";
@@ -193,7 +199,10 @@
             notionTokenInput: () => $('notionTokenInput'),
             notionDbInput: () => $('notionDbInput'),
             syncAllNotionBtn: () => $('syncAllNotionBtn'),
-            copyLogBtn: () => $('copyLogBtn')
+            copyLogBtn: () => $('copyLogBtn'),
+            fileInfo: () => $('fileInfo'),
+            noteFileInfo: () => $('noteFileInfo'),
+            globalOverlay: () => $('global-drag-overlay')
         };
 
         function log(msg) {
@@ -212,100 +221,96 @@
             setTimeout(() => toastEl.classList.replace('opacity-100', 'opacity-0'), 3000);
         }
 
-        // --- 強韌 Fetch 救援小隊 ---
+        // --- 強韌 Fetch 救援小隊 3.0 ---
         async function fetchWithRetry(url, options, retries = 3) {
+            const delay = 2500;
             try {
                 const response = await fetch(url, options);
-                if (!response.ok && retries > 0 && response.status !== 404) {
-                    log(`⚠️ 連線異常 (HTTP ${response.status})，2秒後自動重試...`);
-                    await new Promise(r => setTimeout(r, 2000));
+                if (!response.ok) {
+                    if (response.status === 404) return response;
+                    log(`⚠️ 連線波段不穩 (HTTP ${response.status})，${delay/1000}秒後由救援隊介入...`);
+                    await new Promise(r => setTimeout(r, delay));
                     return fetchWithRetry(url, options, retries - 1);
                 }
                 return response;
             } catch (err) {
                 if (retries > 0) {
-                    log(`🔌 傳輸亂流，正在救援連線 (${retries})...`);
-                    await new Promise(r => setTimeout(r, 2000));
+                    log(`🔌 發現通訊黑洞，正嘗試強行修正位元流 (${retries})...`);
+                    await new Promise(r => setTimeout(r, delay));
                     return fetchWithRetry(url, options, retries - 1);
                 }
                 throw err;
             }
         }
 
-        function refreshNotionVisibility() {
-            const token = localStorage.getItem('notion_token');
-            const dbId = localStorage.getItem('notion_db_id');
-            const btn = elements.syncAllNotionBtn();
-            if (btn) {
-                if (token && dbId) btn.classList.remove('hidden');
-                else btn.classList.add('hidden');
-            }
-        }
-
-        function initDragEvents() {
+        // --- 真．全域皮膚拖曳 ---
+        function initGlobalDragEvents() {
             const prevent = (e) => { e.preventDefault(); e.stopPropagation(); };
-            
-            const aDrop = elements.dropZone();
-            const nDrop = elements.noteDropZone();
+            const overlay = elements.globalOverlay();
 
-            if (aDrop) {
-                ['dragenter', 'dragover'].forEach(n => aDrop.addEventListener(n, (e) => { prevent(e); aDrop.classList.add('drag-over-audio'); }));
-                ['dragleave', 'drop'].forEach(n => aDrop.addEventListener(n, (e) => { prevent(e); aDrop.classList.remove('drag-over-audio'); if(n === 'drop') handleAudioFile(e.dataTransfer.files[0]); }));
-            }
+            window.addEventListener('dragenter', (e) => {
+                prevent(e);
+                if (overlay) overlay.style.display = 'flex';
+            });
 
-            if (nDrop) {
-                ['dragenter', 'dragover'].forEach(n => nDrop.addEventListener(n, (e) => { prevent(e); nDrop.classList.add('drag-over-note'); }));
-                ['dragleave', 'drop'].forEach(n => nDrop.addEventListener(n, (e) => { prevent(e); nDrop.classList.remove('drag-over-note'); if(n === 'drop') handleNoteFile(e.dataTransfer.files[0]); }));
-            }
+            overlay.addEventListener('dragover', prevent);
+            overlay.addEventListener('dragleave', (e) => {
+                prevent(e);
+                if (e.relatedTarget === null) overlay.style.display = 'none';
+            });
+
+            window.addEventListener('drop', (e) => {
+                prevent(e);
+                if (overlay) overlay.style.display = 'none';
+                const file = e.dataTransfer.files[0];
+                if (!file) return;
+
+                if (file.type.startsWith('audio/')) handleAudioFile(file);
+                else handleNoteFile(file);
+            });
         }
 
         function handleAudioFile(file) {
-            if (file && file.type.startsWith('audio/')) {
+            if (file) {
                 selectedAudio = file;
                 const display = elements.fileNameDisplay();
                 if (display) display.textContent = file.name;
-                const info = document.getElementById('fileInfo');
-                if (info) info.classList.remove('hidden');
-                const btn = elements.transcribeBtn();
-                if (btn) btn.disabled = false;
-                log(`📁 音檔就位：${file.name}`);
+                if (elements.fileInfo()) elements.fileInfo().classList.remove('hidden');
+                if (elements.transcribeBtn()) elements.transcribeBtn().disabled = false;
+                log(`📁 音檔成功對接：${file.name}`);
             }
         }
 
         function handleNoteFile(file) {
-            const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'image/jpeg', 'image/png'];
             const ext = file.name.split('.').pop().toLowerCase();
-            const isValidExt = ['pdf', 'docx', 'txt', 'jpg', 'jpeg', 'png'].includes(ext);
-
-            if (file && (validTypes.includes(file.type) || isValidExt)) {
+            const valid = ['pdf', 'docx', 'txt', 'jpg', 'jpeg', 'png'];
+            if (file && valid.includes(ext)) {
                 selectedNote = file;
                 const display = elements.noteFileNameDisplay();
                 if (display) display.textContent = file.name;
-                const info = document.getElementById('noteFileInfo');
-                if (info) info.classList.remove('hidden');
-                log(`📖 參考素材就位：${file.name}`);
+                if (elements.noteFileInfo()) elements.noteFileInfo().classList.remove('hidden');
+                log(`📖 參考數據成功對接：${file.name}`);
             } else if (file) {
-                alert("目前支援 PDF, DOCX, TXT 及 JPG/PNG 圖片喔！");
+                alert("不支援此格式，請上傳 PDF/DOCX/JPG/PNG。");
             }
         }
 
         async function autoDiscoverModel(key) {
             if (!key) return;
-            log("🔍 領航者正在掃描大腦座標...");
+            log("🔍 領航者偵測大腦中...");
             try {
                 const res = await fetch(`${BASE_URL}/${API_VERSION}/models?key=${encodeURIComponent(key)}`);
                 const data = await res.json();
                 if (data.models) {
                     const names = data.models.map(m => m.name.replace("models/", ""));
-                    const best = names.find(m => m.includes("2.5-flash")) || 
-                                names.find(m => m.includes("1.5-flash")) || names[0];
+                    const best = names.find(m => m.includes("2.5-flash")) || names.find(m => m.includes("1.5-flash")) || names[0];
                     if (best) {
                         CURRENT_MODEL = best;
                         localStorage.setItem('last_successful_model', best);
-                        log(`🚀 大腦座標鎖定：${best}`);
+                        log(`🚀 大腦座標已鎖定：${best}`);
                     }
                 }
-            } catch (e) { log("🛰️ 通訊微弱，啟動穩定穩定航線模式。"); }
+            } catch (e) { log("🛰️ 初始化大腦座標失敗，使用穩定模式。"); }
         }
 
         window.addEventListener('load', () => {
@@ -329,7 +334,7 @@
                 elements.settingsOverlay().classList.add('hidden');
                 if (val) autoDiscoverModel(val);
                 refreshNotionVisibility();
-                showToast("導航參數更新 ✅");
+                showToast("數據港參數已儲存 ✅");
             };
 
             elements.dropZone().onclick = () => elements.audioInput().click();
@@ -338,44 +343,51 @@
             elements.noteInput().onchange = (e) => handleNoteFile(e.target.files[0]);
 
             refreshNotionVisibility();
-            initDragEvents();
-            log("⚓ 導航系統初始化完成。");
+            initGlobalDragEvents();
+            log("⚓ Navigator v6.3 初始化完成，迎接船長指令。");
         });
 
-        // --- 核心生成引擎 ---
+        function refreshNotionVisibility() {
+            const token = localStorage.getItem('notion_token');
+            const dbId = localStorage.getItem('notion_db_id');
+            const btn = elements.syncAllNotionBtn();
+            if (btn) {
+                if (token && dbId) btn.classList.remove('hidden');
+                else btn.classList.add('hidden');
+            }
+        }
+
+        // --- 核心生成引擎 3.0 (高穩定版本) ---
         async function startTranscription(audioFile, noteFile, rawText, key) {
             const encodedKey = encodeURIComponent(key.trim());
             try {
                 let noteUri = null;
-                // 1. 同步筆記素材 (強韌連線)
+                // 1. 同步筆記素材
                 if (noteFile) {
-                    log(`1️⃣ 筆記/圖片同步中...`);
-                    const nUpload = await fetchWithRetry(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
+                    log(`1️⃣ 片段素材疏通中...`);
+                    const nInit = await fetchWithRetry(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'X-Goog-Upload-Header-Content-Length': noteFile.size, 'X-Goog-Upload-Header-Content-Type': noteFile.type },
                         body: JSON.stringify({ file: { display_name: `ref_${Date.now()}` } })
                     });
-                    const nUrl = nUpload.headers.get('X-Goog-Upload-URL');
+                    const nUrl = nInit.headers.get('X-Goog-Upload-URL');
                     const nRes = await (await fetchWithRetry(nUrl, { method: 'PUT', body: noteFile })).json();
                     noteUri = nRes.file.uri;
-                    log(`✅ 參考素材上傳完成。`);
+                    log(`✅ 參考素材數據入港。`);
                 }
 
-                // 2. 冷靜期 2 秒 (緩衝網路通道)
-                if (noteFile) {
-                    log(`⌛ 緩衝 2 秒清空連線通道...`);
-                    await new Promise(r => setTimeout(r, 2000));
-                }
+                // 2. 緩衝 2 秒讓連線通道冷卻
+                await new Promise(r => setTimeout(r, 2000));
 
                 // 3. 上傳音檔
-                log(`2️⃣ 傳送音訊大數據...`);
-                elements.statusLabel().textContent = "正在同步錄音位元數據...";
-                const aUpload = await fetchWithRetry(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
+                log(`2️⃣ 搬運錄音位元數據...`);
+                elements.statusLabel().textContent = "正在疏通音訊傳送門...";
+                const aInit = await fetchWithRetry(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'X-Goog-Upload-Header-Content-Length': audioFile.size, 'X-Goog-Upload-Header-Content-Type': audioFile.type },
                     body: JSON.stringify({ file: { display_name: `audio_${Date.now()}` } })
                 });
-                const aUrl = aUpload.headers.get('X-Goog-Upload-URL');
+                const aUrl = aInit.headers.get('X-Goog-Upload-URL');
                 const aRes = await (await fetchWithRetry(aUrl, { method: 'PUT', body: audioFile })).json();
                 const audioUri = aRes.file.uri;
                 const audioName = aRes.file.name;
@@ -384,17 +396,17 @@
                     await new Promise(r => setTimeout(r, 4000));
                     const status = await (await fetchWithRetry(`${BASE_URL}/${API_VERSION}/${audioName}?key=${encodedKey}`)).json();
                     if (status.state === "ACTIVE") break;
+                    if (status.state === "FAILED") throw new Error("音軌解析失敗");
                 }
 
-                log(`3️⃣ 分析引擎運算中 (10s 冷靜期)...`);
+                log(`3️⃣ 分析引擎全面運算中 (10s 冷靜期)...`);
                 await new Promise(r => setTimeout(r, 10000));
 
-                const prompt = `妳是 Monika 的專屬祕書小Ge。
-                請精確聽辨錄音，並結合【參考素材】（文件或照片）中的背景知識進行對齊。
-                若素材是圖片，請先辨識其文字內容。
-                產出繁體中文：1. 重點摘要 2. 行動決策 3. 3-5個精準Hashtags 4. 精煉逐字稿。
-                初步參考：${rawTranscriptInput.value || "無"}。
-                妳必須回傳精確 JSON：{ "summary": "內容", "hashtags": ["#標籤"], "transcript": "內容" }。`;
+                const prompt = `妳是 Monika 的專屬 AI 祕書小Ge。
+                請精確分析錄音，並與提供的【參考素材】（照片或文件）進行對齊。
+                產出繁體中文：1. 重點摘要 2. 行動決策 3. 3-5個重點Hashtags 4. 去除贅字的逐字稿。
+                初步參考：${rawText || "無"}。
+                妳必須回傳正確 JSON：{ "summary": "內容", "hashtags": ["#標籤"], "transcript": "內容" }。絕對禁止簡體。`;
 
                 const parts = [{ text: prompt }, { fileData: { mimeType: audioFile.type, fileUri: audioUri } }];
                 if (noteUri) parts.push({ fileData: { mimeType: noteFile.type, fileUri: noteUri } });
@@ -411,7 +423,7 @@
                 const data = JSON.parse(text.match(/\{[\s\S]*\}/)[0]);
                 data.fileName = audioFile.name;
                 return data;
-            } catch (e) { log(`🛑 傳輸中斷: ${e.message}`); throw e; }
+            } catch (e) { log(`🛑 傳輸航線斷裂: ${e.message}`); throw e; }
         }
 
         elements.transcribeBtn().onclick = async () => {
@@ -426,9 +438,9 @@
                 segmentQueue.push(data);
                 renderSegments();
                 elements.queueSection().classList.remove('hidden');
-                showToast("任務達成！✨");
+                showToast("分析引擎任務達成！✨");
             } catch (err) {
-                elements.statusLabel().textContent = "❌ 傳輸異常，請重新點擊嘗試。";
+                elements.statusLabel().textContent = "❌ 航道受阻，請再次嘗試啟動。";
             } finally {
                 btn.disabled = false;
                 elements.statusLabel().classList.add('hidden');
@@ -438,7 +450,7 @@
         function renderSegments() {
             elements.segmentList().innerHTML = segmentQueue.map((seg, i) => `
                 <div class="animate-result bg-white p-12 rounded-[3.5rem] border border-slate-200 shadow-sm relative overflow-hidden">
-                    <span class="text-[10px] font-black text-sky-500 uppercase tracking-widest mb-3 block">Result Segment #${i+1}</span>
+                    <span class="text-[10px] font-black text-sky-500 uppercase tracking-widest mb-3 block">Analysis Result #${i+1}</span>
                     <h3 class="text-2xl font-bold mb-6 text-slate-800">${seg.fileName}</h3>
                     <div class="whitespace-pre-wrap text-xl text-slate-600 leading-relaxed mb-8">${seg.summary}</div>
                     <div class="flex flex-wrap">${(seg.hashtags || []).map(t => `<span class="hashtag-pill">${t}</span>`).join('')}</div>
@@ -460,7 +472,7 @@
             textArea.select();
             document.execCommand('copy');
             document.body.removeChild(textArea);
-            showToast("日誌已複製");
+            showToast("日誌已複製到剪貼簿");
         };
     </script>
 </body>
