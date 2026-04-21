@@ -12,7 +12,6 @@
     <style>
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #F8FAFC; color: #1E293B; overflow-x: hidden; }
         .drag-over { border-color: #0EA5E9 !important; background-color: #F0F9FF !important; transform: scale(1.005); box-shadow: 0 0 40px rgba(14, 165, 233, 0.35); }
-        .transcript-container { scroll-behavior: smooth; }
         .transcript-container::-webkit-scrollbar { width: 6px; }
         .transcript-container::-webkit-scrollbar-thumb { background-color: #CBD5E1; border-radius: 10px; }
         .debug-console { background: #0F172A; color: #38BDF8; font-family: monospace; font-size: 11px; padding: 15px; border-radius: 12px; margin-top: 15px; max-height: 250px; overflow-y: auto; line-height: 1.6; border: 1px solid #1E293B; }
@@ -24,7 +23,8 @@
         #toast { transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
         .speaking-icon svg { animation: pulse-wave 2s infinite ease-in-out; }
         @keyframes pulse-wave { 0% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 0.7; } }
-        .home-ready-badge { background: linear-gradient(90deg, #F59E0B, #EF4444); color: white; padding: 2px 8px; border-radius: 6px; font-size: 9px; font-weight: 900; }
+        .breakthrough-badge { background: linear-gradient(90deg, #F59E0B, #EF4444); color: white; padding: 2px 8px; border-radius: 6px; font-size: 9px; font-weight: 900; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -45,66 +45,33 @@
                         Monika | AI 語音助理 <span class="text-sky-400 ml-1">Pro</span>
                     </h1>
                     <div class="flex items-center mt-1">
-                        <span class="home-ready-badge mr-2">ULTRA RESILIENT</span>
-                        <p class="text-[10px] text-slate-400 tracking-widest uppercase font-bold italic">Bypass Edition v6.9</p>
+                        <span class="breakthrough-badge mr-2">DIMENSION BREAK</span>
+                        <p class="text-[10px] text-slate-400 tracking-widest uppercase font-bold italic">Navigator v7.0</p>
                     </div>
                 </div>
             </div>
-            <div class="flex items-center space-x-2">
-                <button id="helpBtn" class="p-2 hover:bg-slate-700 rounded-full transition-all text-slate-300" title="常見問題排查">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </button>
-                <button id="settingsBtn" class="p-2 hover:bg-slate-700 rounded-full transition-all text-slate-300 active:scale-90">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
-                </button>
-            </div>
+            <button id="settingsBtn" class="p-2 hover:bg-slate-700 rounded-full transition-all text-slate-300 active:scale-90">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+            </button>
         </div>
     </header>
 
     <main class="flex-grow container mx-auto px-6 py-10 max-w-5xl">
-        <!-- Help Overlay -->
-        <div id="helpOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md hidden z-50 flex items-center justify-center p-6">
-            <div class="bg-white rounded-[2rem] p-8 max-w-lg w-full shadow-2xl border border-white/20 overflow-y-auto">
-                <h3 class="text-2xl font-bold mb-6 text-sky-600 flex items-center">
-                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                    絕境通訊排查 (v6.9)
-                </h3>
-                <div class="space-y-4 text-slate-600">
-                    <div class="bg-red-50 p-4 rounded-2xl border border-red-100">
-                        <p class="font-bold text-red-800 mb-1">🆘 看到 Failed to fetch？</p>
-                        <p class="text-sm">這代表瀏覽器內部的安全模型拒絕了連線。v6.9 已嘗試「移除所有敏感標頭」來規避此問題。若依然發生，請檢查您的瀏覽器是否安裝了 **CORS Unblock** 或 **Privacy Badger** 等會強制修改標頭的插件，請暫時將其關閉。</p>
-                    </div>
-                </div>
-                <button id="closeHelpBtn" class="w-full mt-8 bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-sky-600 transition-all">收到了，開始作戰！</button>
-            </div>
-        </div>
-
         <!-- Settings Overlay -->
         <div id="settingsOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md hidden z-50 flex items-center justify-center p-6">
             <div class="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-white/20">
                 <h3 class="text-xl font-bold mb-6 text-slate-800 flex items-center">
                     <svg class="w-5 h-5 mr-2 text-sky-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
-                    座標指揮中心
+                    座標指揮中心 (v7.0)
                 </h3>
                 <div class="space-y-4">
                     <div>
                         <label class="text-[10px] font-black text-slate-400 uppercase block mb-1">Google AI API Key</label>
-                        <input type="password" id="apiKeyInput" placeholder="請貼上您的 API Key..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-4 focus:ring-sky-500/10 transition-all shadow-inner">
+                        <input type="password" id="apiKeyInput" placeholder="在此貼上您的 API Key..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-4 focus:ring-sky-500/10 transition-all">
                     </div>
-                    
-                    <details class="group mt-4 border border-slate-100 rounded-xl p-3">
-                        <summary class="text-xs font-bold text-slate-400 cursor-pointer hover:text-sky-500 flex justify-between items-center">
-                            <span>擴充功能：Notion 串接</span>
-                            <svg class="w-4 h-4 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        </summary>
-                        <div class="space-y-3 mt-3">
-                            <input type="password" id="notionTokenInput" placeholder="Notion Token..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs">
-                            <input type="text" id="notionDbInput" placeholder="Database ID..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs">
-                        </div>
-                    </details>
                 </div>
                 <div class="flex space-x-3 mt-8">
-                    <button id="saveKeyBtn" class="flex-1 bg-sky-600 text-white py-3 rounded-xl font-bold hover:bg-sky-700 active:scale-95 transition-all">儲存並重啟系統</button>
+                    <button id="saveKeyBtn" class="flex-1 bg-sky-600 text-white py-3 rounded-xl font-bold hover:bg-sky-700 active:scale-95 transition-all">重啟次元引擎</button>
                     <button id="closeSettingsBtn" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200">取消</button>
                 </div>
             </div>
@@ -116,7 +83,7 @@
                 <input type="file" id="audioInput" class="hidden" accept="audio/*">
                 <div class="flex flex-col items-center pointer-events-none">
                     <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-white group-hover:text-sky-500 shadow-sm transition-all transform group-hover:scale-110">
-                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="2" stroke-linecap="round"></path></svg>
                     </div>
                     <h2 class="text-xl font-bold text-slate-700 tracking-tight text-center">1. 上傳錄音 (必填)</h2>
                     <div id="fileInfo" class="hidden mt-4 animate-bounce">
@@ -129,7 +96,7 @@
                 <input type="file" id="noteInput" class="hidden" accept=".pdf,.docx,.txt,.jpg,.jpeg,.png">
                 <div class="flex flex-col items-center pointer-events-none">
                     <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-white group-hover:text-emerald-500 shadow-sm transition-all transform group-hover:scale-110">
-                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 1 0 01-2 2z"></path></svg>
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 1 0 01-2 2z" stroke-width="2" stroke-linecap="round"></path></svg>
                     </div>
                     <h2 class="text-xl font-bold text-slate-700 tracking-tight text-center">3. 筆記或照片 (選填)</h2>
                     <div id="noteFileInfo" class="hidden mt-4 animate-bounce">
@@ -145,25 +112,24 @@
                 <div class="w-1.5 h-4 bg-sky-500 rounded-full mr-2"></div>
                 2. 粘貼初步逐字稿片段 (選填)
             </label>
-            <textarea id="rawTranscriptInput" placeholder="輔助 AI 修正專有名詞、對齊內容..." class="w-full h-32 text-slate-600 outline-none resize-none text-sm leading-relaxed"></textarea>
+            <textarea id="rawTranscriptInput" placeholder="輔助 AI 修正、對齊內容..." class="w-full h-32 text-slate-600 outline-none resize-none text-sm leading-relaxed"></textarea>
         </div>
 
         <div class="mt-14 flex flex-col items-center">
             <button id="transcribeBtn" disabled class="bg-[#0F172A] text-white px-20 py-6 rounded-[2.5rem] font-bold text-2xl disabled:bg-slate-200 disabled:text-slate-400 shadow-2xl hover:bg-sky-600 transition-all active:scale-95 flex items-center group">
-                啟動極限突破分析
+                啟動次元突破分析
             </button>
-            <div id="statusLabel" class="mt-8 text-sky-600 font-extrabold animate-pulse hidden text-center text-xl tracking-tight">小Ge 正在強制對齊連線通道...</div>
+            <div id="statusLabel" class="mt-8 text-sky-600 font-extrabold animate-pulse hidden text-center text-xl tracking-tight">小Ge 正在啟動次元通道傳送數據...</div>
         </div>
 
         <!-- Staging Zone -->
         <div id="queueSection" class="mt-24 space-y-10 hidden">
             <div class="flex justify-between items-end border-b-2 border-slate-100 pb-8">
                 <div>
-                    <h2 class="text-4xl font-extrabold text-slate-800 tracking-tighter">🗂️ 分析成果暫存區</h2>
+                    <h2 class="text-4xl font-extrabold text-slate-800 tracking-tighter">🗂️ 分析成果暫存</h2>
                     <p class="text-slate-400 text-lg mt-2 font-medium italic">您可以合併多個片段進行最後處理</p>
                 </div>
                 <div class="flex space-x-4">
-                    <button id="syncAllNotionBtn" class="hidden bg-sky-600 text-white px-8 py-4 rounded-[1.5rem] font-bold text-lg shadow-xl hover:bg-sky-700 transition-all transform hover:-translate-y-1">🚀 同步至 Notion</button>
                     <button id="exportAllWordBtn" class="bg-emerald-600 text-white px-8 py-4 rounded-[1.5rem] font-bold text-lg shadow-xl hover:bg-emerald-700 transition-all">📄 匯出 Word</button>
                     <button id="clearQueueBtn" class="bg-slate-100 text-slate-400 px-6 py-4 rounded-[1.5rem] font-bold hover:bg-red-50 hover:text-red-500 transition-all">清空暫存</button>
                 </div>
@@ -175,7 +141,7 @@
         <div id="debugArea" class="mt-24 pt-12 border-t border-slate-200/60">
             <details class="group">
                 <summary class="flex justify-between items-center cursor-pointer text-slate-300 hover:text-slate-500 transition-all">
-                    <span class="text-[10px] font-black tracking-[0.4em] uppercase">Bypass Protocol Debug / Console</span>
+                    <span class="text-[10px] font-black tracking-[0.4em] uppercase">Breakthrough Console / v7.0</span>
                     <button id="copyLogBtn" class="text-[9px] bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-300 font-bold">COPY LOG</button>
                 </summary>
                 <div id="debugConsole" class="debug-console">等待 Monika 指令...</div>
@@ -183,16 +149,17 @@
         </div>
     </main>
 
-    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-10 py-5 rounded-[1.5rem] shadow-2xl opacity-0 pointer-events-none z-[100] font-bold text-lg text-center">成功 ✨</div>
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-10 py-5 rounded-[1.5rem] shadow-2xl opacity-0 pointer-events-none z-[100] font-bold text-lg text-center">次元突破成功 ✨</div>
 
     <script>
-        // --- v6.9 核心配置 ---
+        // --- v7.0 核心突破配置 ---
         let CURRENT_MODEL = localStorage.getItem('last_successful_model') || "gemini-1.5-flash"; 
         const API_VERSION = "v1beta";
         const BASE_URL = "https://generativelanguage.googleapis.com";
         let segmentQueue = [];
         let selectedAudio = null;
         let selectedNote = null;
+        let inlineImageData = null; // 用於儲存圖片 Base64
 
         const $ = (id) => document.getElementById(id);
         const elements = {
@@ -213,14 +180,7 @@
             settingsOverlay: () => $('settingsOverlay'),
             saveKeyBtn: () => $('saveKeyBtn'),
             closeSettingsBtn: () => $('closeSettingsBtn'),
-            apiKeyInput: () => $('apiKeyInput'),
-            notionTokenInput: () => $('notionTokenInput'),
-            notionDbInput: () => $('notionDbInput'),
-            syncAllNotionBtn: () => $('syncAllNotionBtn'),
             copyLogBtn: () => $('copyLogBtn'),
-            helpBtn: () => $('helpBtn'),
-            helpOverlay: () => $('helpOverlay'),
-            closeHelpBtn: () => $('closeHelpBtn'),
             fileInfo: () => $('fileInfo'),
             noteFileInfo: () => $('noteFileInfo')
         };
@@ -241,180 +201,139 @@
             setTimeout(() => toastEl.classList.replace('opacity-100', 'opacity-0'), 3000);
         }
 
-        // --- v6.9 突破連線救援隊 ---
-        async function bypassFetch(url, options, retries = 3) {
+        // --- 強韌 Fetch ---
+        async function robustFetch(url, options, retries = 3) {
             try {
                 const response = await fetch(url, options);
-                // 針對 4xx 或 5xx 以外的真正連線中斷進行重試
-                if (!response.ok && retries > 0 && response.status !== 404) {
-                    log(`🔌 通道重整中，${retries} 次機會...`);
+                if (!response.ok && retries > 0) {
                     await new Promise(r => setTimeout(r, 2000));
-                    return bypassFetch(url, options, retries - 1);
+                    return robustFetch(url, options, retries - 1);
                 }
                 return response;
             } catch (err) {
-                // TypeError: Failed to fetch 通常發生在這裡
                 if (retries > 0) {
-                    log(`🚨 攔截到瀏覽器連線拒絕：${err.message}，嘗試極簡化重啟...`);
+                    log(`🔌 通道重整中 (${retries})...`);
                     await new Promise(r => setTimeout(r, 2000));
-                    // 嘗試移除 metadata body 來測試連線
-                    return bypassFetch(url, options, retries - 1);
+                    return robustFetch(url, options, retries - 1);
                 }
                 throw err;
-            }
-        }
-
-        function setupGlobalDragDrop() {
-            const prevent = (e) => { e.preventDefault(); e.stopPropagation(); };
-            window.addEventListener('dragover', prevent);
-            window.addEventListener('drop', prevent);
-            const aDrop = elements.dropZone();
-            const nDrop = elements.noteDropZone();
-            if (aDrop) {
-                aDrop.addEventListener('dragover', (e) => { prevent(e); aDrop.classList.add('drag-over'); });
-                aDrop.addEventListener('dragleave', (e) => { prevent(e); aDrop.classList.remove('drag-over'); });
-                aDrop.addEventListener('drop', (e) => { prevent(e); aDrop.classList.remove('drag-over'); if(e.dataTransfer.files[0]) handleAudioFile(e.dataTransfer.files[0]); });
-            }
-            if (nDrop) {
-                nDrop.addEventListener('dragover', (e) => { prevent(e); nDrop.classList.add('drag-over'); });
-                nDrop.addEventListener('dragleave', (e) => { prevent(e); nDrop.classList.remove('drag-over'); });
-                nDrop.addEventListener('drop', (e) => { prevent(e); nDrop.classList.remove('drag-over'); if(e.dataTransfer.files[0]) handleNoteFile(e.dataTransfer.files[0]); });
             }
         }
 
         function handleAudioFile(file) {
             if (file && file.type.startsWith('audio/')) {
                 selectedAudio = file;
-                const display = elements.fileNameDisplay();
-                if (display) display.textContent = file.name;
-                const info = elements.fileInfo();
-                if (info) info.classList.remove('hidden');
-                const btn = elements.transcribeBtn();
-                if (btn) btn.disabled = false;
-                log(`📁 音軌已準備：${file.name}`);
+                elements.fileNameDisplay().textContent = file.name;
+                elements.fileInfo().classList.remove('hidden');
+                elements.transcribeBtn().disabled = false;
+                log(`📁 音軌已就位：${file.name}`);
             }
         }
 
         function handleNoteFile(file) {
+            const isImage = file.type.startsWith('image/');
             const validExts = ['pdf', 'docx', 'txt', 'jpg', 'jpeg', 'png'];
             const ext = file.name.split('.').pop().toLowerCase();
-            if (file && validExts.includes(ext)) {
+
+            if (file && (validExts.includes(ext) || isImage)) {
                 selectedNote = file;
-                const display = elements.noteFileNameDisplay();
-                if (display) display.textContent = file.name;
-                const info = elements.noteFileInfo();
-                if (info) info.classList.remove('hidden');
-                log(`📖 參考素材已準備：${file.name}`);
+                elements.noteFileNameDisplay().textContent = file.name;
+                elements.noteFileInfo().classList.remove('hidden');
+                
+                if (isImage) {
+                    log(`📸 檢測到圖片筆記，啟動次元數據預加載...`);
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        inlineImageData = e.target.result.split(',')[1];
+                        log(`✅ 圖片數據已轉化為次元位元。`);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    inlineImageData = null;
+                    log(`📖 參考文件已就位：${file.name}`);
+                }
             }
         }
 
         window.addEventListener('load', () => {
-            const key = localStorage.getItem('gemini_api_key');
-            elements.settingsBtn().onclick = () => {
-                elements.apiKeyInput().value = localStorage.getItem('gemini_api_key') || "";
-                elements.notionTokenInput().value = localStorage.getItem('notion_token') || "";
-                elements.notionDbInput().value = localStorage.getItem('notion_db_id') || "";
-                elements.settingsOverlay().classList.remove('hidden');
-            };
-            elements.closeSettingsBtn().onclick = (e) => { e.preventDefault(); elements.settingsOverlay().classList.add('hidden'); };
-            elements.helpBtn().onclick = () => elements.helpOverlay().classList.remove('hidden');
-            elements.closeHelpBtn().onclick = () => elements.helpOverlay().classList.add('hidden');
+            const prevent = (e) => { e.preventDefault(); e.stopPropagation(); };
+            window.addEventListener('dragover', prevent);
+            window.addEventListener('drop', prevent);
+
+            elements.settingsBtn().onclick = () => elements.settingsOverlay().classList.remove('hidden');
+            elements.closeSettingsBtn().onclick = () => elements.settingsOverlay().classList.add('hidden');
             elements.saveKeyBtn().onclick = () => {
-                const newKey = elements.apiKeyInput().value.trim();
-                localStorage.setItem('gemini_api_key', newKey);
-                localStorage.setItem('notion_token', elements.notionTokenInput().value.trim());
-                localStorage.setItem('notion_db_id', elements.notionDbInput().value.trim());
+                localStorage.setItem('gemini_api_key', elements.apiKeyInput().value.trim());
                 elements.settingsOverlay().classList.add('hidden');
-                refreshNotionVisibility();
                 showToast("導航數據已更新 ✅");
-                log("📡 指標已重置，準備迎接新傳輸。");
             };
+
             elements.dropZone().onclick = () => elements.audioInput().click();
             elements.audioInput().onchange = (e) => handleAudioFile(e.target.files[0]);
             elements.noteDropZone().onclick = () => elements.noteInput().click();
             elements.noteInput().onchange = (e) => handleNoteFile(e.target.files[0]);
-            refreshNotionVisibility();
-            setupGlobalDragDrop();
-            log("⚓ v6.9 絕境突破模式啟動。已移除高敏感標頭。");
+
+            log("⚓ v7.0 次元突破系統已就緒。不敲門，直接穿牆！");
         });
 
-        function refreshNotionVisibility() {
-            const token = localStorage.getItem('notion_token');
-            const dbId = localStorage.getItem('notion_db_id');
-            const btn = elements.syncAllNotionBtn();
-            if (btn && token && dbId) btn.classList.remove('hidden');
-            else if (btn) btn.classList.add('hidden');
-        }
-
-        // --- v6.9 核心突破上傳引擎 ---
+        // --- v7.0 突破式生成邏輯 ---
         async function startTranscription(audioFile, noteFile, rawText, key) {
             const encodedKey = encodeURIComponent(key.trim());
             try {
+                let audioUri = null;
+                let audioName = null;
                 let noteUri = null;
 
-                // --- 脈衝預熱 ---
-                await fetch(`${BASE_URL}/v1beta/models?key=${encodedKey}`).catch(()=>{});
-
-                // 1. 同步素材 (v6.9 採用極簡標頭法)
-                if (noteFile) {
-                    log(`1️⃣ 片段素材同步中 (${(noteFile.size/1024).toFixed(1)} KB)...`);
-                    
-                    // 改用最基礎的 POST，不帶自定義 Header 試試
-                    const nReg = await bypassFetch(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
+                // 1. 同步參考文件 (非圖片)
+                if (noteFile && !inlineImageData) {
+                    log(`1️⃣ 片段素材同步中...`);
+                    const nReg = await robustFetch(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' }, // 移除 X-Goog-Upload-Protocol: resumable
+                        headers: { 'Content-Type': 'application/json', 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start' },
                         body: JSON.stringify({ file: { display_name: `ref_${Date.now()}` } })
                     });
-                    
-                    // 如果極簡法沒拿到 URL，則切換回標規但移除輔助 Header
-                    let nUrl = nReg.headers.get('X-Goog-Upload-URL');
-                    if (!nUrl) {
-                        const nRegStandard = await bypassFetch(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start' },
-                            body: JSON.stringify({ file: { display_name: `ref_s_${Date.now()}` } })
-                        });
-                        nUrl = nRegStandard.headers.get('X-Goog-Upload-URL');
-                    }
-
-                    if (!nUrl) throw new Error("Google 無法分配傳輸通道");
-                    
-                    const nRes = await (await bypassFetch(nUrl, { method: 'PUT', body: noteFile })).json();
+                    const nUrl = nReg.headers.get('X-Goog-Upload-URL');
+                    const nRes = await (await robustFetch(nUrl, { method: 'PUT', body: noteFile })).json();
                     noteUri = nRes.file.uri;
-                    log(`✅ 素材突破成功。`);
-                    await new Promise(r => setTimeout(r, 2000));
+                    log(`✅ 素材同步成功。`);
                 }
 
-                // 2. 同步音訊 (核心同步)
-                log(`2️⃣ 傳送音訊位元 (${(audioFile.size/1024/1024).toFixed(1)} MB)...`);
-                elements.statusLabel().textContent = "正在突破連線屏障中...";
-                const aReg = await bypassFetch(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
+                // 2. 同步音訊 (核心)
+                log(`2️⃣ 音軌次元傳輸中 (${(audioFile.size/1024/1024).toFixed(1)} MB)...`);
+                const aReg = await robustFetch(`${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start' },
                     body: JSON.stringify({ file: { display_name: `audio_${Date.now()}` } })
                 });
                 const aUrl = aReg.headers.get('X-Goog-Upload-URL');
-                const aRes = await (await bypassFetch(aUrl, { method: 'PUT', body: audioFile })).json();
-                const audioUri = aRes.file.uri;
-                const audioName = aRes.file.name;
+                const aRes = await (await robustFetch(aUrl, { method: 'PUT', body: audioFile })).json();
+                audioUri = aRes.file.uri;
+                audioName = aRes.file.name;
 
                 while (true) {
                     await new Promise(r => setTimeout(r, 4000));
-                    const statusRes = await bypassFetch(`${BASE_URL}/${API_VERSION}/${audioName}?key=${encodedKey}`);
+                    const statusRes = await robustFetch(`${BASE_URL}/${API_VERSION}/${audioName}?key=${encodedKey}`);
                     const status = await statusRes.json();
                     if (status.state === "ACTIVE") break;
-                    if (status.state === "FAILED") throw new Error("音訊分析異常");
+                    if (status.state === "FAILED") throw new Error("音訊分析受阻");
                 }
 
                 log(`3️⃣ 分析引擎精煉報告 (10s 緩衝)...`);
                 await new Promise(r => setTimeout(r, 10000));
 
-                const prompt = `妳是 Monika 的專屬祕書小Ge。結合音檔與【參考素材】內容校對。如果是圖片請識別文字。產出繁體中文：1. 重點摘要 2. 行動決策 3. 3-5個標籤 4. 精煉逐字稿。初步參考：${rawText || "無"}。回傳 JSON：{ "summary": "內容", "hashtags": ["#標籤"], "transcript": "內容" }。`;
+                const prompt = `妳是 Monika 的專屬祕書小Ge。結合音檔與【參考素材】。如果是圖片請識別內容。產出繁體中文：1. 重點摘要 2. 行動決策 3. 3-5個標籤 4. 精煉逐字稿。參考文字：${rawText || "無"}。回傳 JSON。`;
 
+                // --- 重要：次元突破傳輸組合 ---
                 const parts = [{ text: prompt }, { fileData: { mimeType: audioFile.type, fileUri: audioUri } }];
-                if (noteUri) parts.push({ fileData: { mimeType: noteFile.type, fileUri: noteUri } });
+                
+                if (inlineImageData) {
+                    log("🧬 注入次元圖片數據流...");
+                    parts.push({ inlineData: { mimeType: noteFile.type, data: inlineImageData } });
+                } else if (noteUri) {
+                    parts.push({ fileData: { mimeType: noteFile.type, fileUri: noteUri } });
+                }
 
-                const response = await bypassFetch(`${BASE_URL}/${API_VERSION}/models/${CURRENT_MODEL}:generateContent?key=${encodedKey}`, {
+                const response = await robustFetch(`${BASE_URL}/${API_VERSION}/models/${CURRENT_MODEL}:generateContent?key=${encodedKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ contents: [{ parts: parts }], generationConfig: { responseMimeType: "application/json", temperature: 0.1 } })
@@ -426,10 +345,7 @@
                 const data = JSON.parse(text.match(/\{[\s\S]*\}/)[0]);
                 data.fileName = audioFile.name;
                 return data;
-            } catch (e) { 
-                log(`🛑 傳輸中斷：${e.message}`); 
-                throw e; 
-            }
+            } catch (e) { log(`🛑 突破受挫：${e.message}`); throw e; }
         }
 
         elements.transcribeBtn().onclick = async () => {
@@ -444,9 +360,9 @@
                 segmentQueue.push(data);
                 renderSegments();
                 elements.queueSection().classList.remove('hidden');
-                showToast("突破成功！✨");
+                showToast("任務圓滿達成！✨");
             } catch (err) {
-                elements.statusLabel().textContent = "❌ 航道封鎖，請參考右上角幫助排查。";
+                elements.statusLabel().textContent = "❌ 次元通道攔截，請重整頁面重試。";
             } finally {
                 btn.disabled = false;
                 elements.statusLabel().classList.add('hidden');
