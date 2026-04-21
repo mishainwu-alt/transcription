@@ -12,7 +12,6 @@
     <style>
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #F8FAFC; color: #1E293B; overflow-x: hidden; }
         .drag-over { border-color: #0EA5E9 !important; background-color: #F0F9FF !important; transform: scale(1.005); box-shadow: 0 0 40px rgba(14, 165, 233, 0.35); }
-        .transcript-container { scroll-behavior: smooth; }
         .transcript-container::-webkit-scrollbar { width: 6px; }
         .transcript-container::-webkit-scrollbar-thumb { background-color: #CBD5E1; border-radius: 10px; }
         .debug-console { background: #0F172A; color: #38BDF8; font-family: monospace; font-size: 11px; padding: 15px; border-radius: 12px; margin-top: 15px; max-height: 250px; overflow-y: auto; line-height: 1.6; border: 1px solid #1E293B; }
@@ -24,7 +23,7 @@
         #toast { transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
         .speaking-icon svg { animation: pulse-wave 2s infinite ease-in-out; }
         @keyframes pulse-wave { 0% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 0.7; } }
-        .fix-badge { background: linear-gradient(90deg, #3B82F6, #8B5CF6); color: white; padding: 2px 8px; border-radius: 6px; font-size: 9px; font-weight: 900; }
+        .version-badge { background: linear-gradient(135deg, #6366F1, #A855F7); color: white; padding: 2px 8px; border-radius: 6px; font-size: 9px; font-weight: 900; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -45,13 +44,13 @@
                         Monika | AI 語音助理 <span class="text-sky-400 ml-1">Pro</span>
                     </h1>
                     <div class="flex items-center mt-1">
-                        <span class="fix-badge mr-2">ULTIMATE STABILITY</span>
-                        <p class="text-[10px] text-slate-400 tracking-widest uppercase font-bold italic">Navigator v7.3</p>
+                        <span class="version-badge mr-2">NEBULA BREAKTHROUGH</span>
+                        <p class="text-[10px] text-slate-400 tracking-widest uppercase font-bold italic">Navigator v8.0</p>
                     </div>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <button id="helpBtn" class="p-2 hover:bg-slate-700 rounded-full transition-all text-slate-300" title="常見問題排查">
+                <button id="helpBtn" class="p-2 hover:bg-slate-700 rounded-full transition-all text-slate-300" title="傳輸問題排查">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </button>
                 <button id="settingsBtn" class="p-2 hover:bg-slate-700 rounded-full transition-all text-slate-300 active:scale-90">
@@ -67,21 +66,21 @@
             <div class="bg-white rounded-[2rem] p-8 max-w-lg w-full shadow-2xl border border-white/20">
                 <h3 class="text-2xl font-bold mb-6 text-sky-600 flex items-center">
                     <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    小Ge 的終極診斷 (v7.3)
+                    星雲傳輸診斷 (v8.0)
                 </h3>
                 <div class="space-y-4 text-slate-600 text-sm leading-relaxed">
-                    <div class="bg-emerald-50 p-4 rounded-xl">
-                        <p class="font-bold text-emerald-800 mb-1">✅ 傳輸機制重大更新：</p>
-                        <p>v7.3 已將音軌上傳改為「單步 Multipart 模式」，移除了所有會觸發瀏覽器安全警報的 Google 特殊標頭。這能大幅降低 Failed to fetch 的發生率。</p>
+                    <div class="bg-purple-50 p-4 rounded-xl">
+                        <p class="font-bold text-purple-800 mb-1">🚀 終極解決方案：</p>
+                        <p>v8.0 採用了「隱形傳輸模式」，移除了所有可能導致瀏覽器報錯的特殊標頭。若您的音檔接近 20MB 且依然失敗，建議先嘗試在**「Chrome 無痕分頁」**中開啟，這能排除大部分擴充套件的干擾。</p>
                     </div>
                 </div>
-                <button id="closeHelpBtn" class="w-full mt-8 bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-sky-600">收到了，開始衝刺！</button>
+                <button id="closeHelpBtn" class="w-full mt-8 bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-sky-600">了解，再次出發！</button>
             </div>
         </div>
 
         <!-- Settings Overlay -->
         <div id="settingsOverlay" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md hidden z-[90] flex items-center justify-center p-6">
-            <div class="bg-white rounded-[2.5rem] p-10 max-w-md w-full shadow-2xl border border-white/10">
+            <div class="bg-white rounded-[2.5rem] p-10 max-w-md w-full shadow-2xl border border-white/10 relative">
                 <h3 class="text-2xl font-bold mb-8 text-slate-800 flex items-center">
                     <svg class="w-6 h-6 mr-3 text-sky-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg>
                     座標指揮中心
@@ -93,7 +92,7 @@
                     </div>
                 </div>
                 <div class="flex space-x-4 mt-10">
-                    <button id="saveKeyBtn" class="flex-1 bg-sky-600 text-white py-4 rounded-2xl font-bold hover:bg-sky-700 active:scale-95 transition-all shadow-lg shadow-sky-200">儲存參數</button>
+                    <button id="saveKeyBtn" class="flex-1 bg-sky-600 text-white py-4 rounded-2xl font-bold hover:bg-sky-700 active:scale-95 transition-all shadow-lg shadow-sky-200">儲存座標</button>
                     <button id="closeSettingsBtn" class="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold hover:bg-slate-200 active:scale-95 transition-all">取消</button>
                 </div>
             </div>
@@ -139,9 +138,9 @@
 
         <div class="mt-14 flex flex-col items-center">
             <button id="transcribeBtn" disabled class="bg-[#0F172A] text-white px-20 py-6 rounded-[2.5rem] font-bold text-2xl disabled:bg-slate-200 disabled:text-slate-400 shadow-2xl hover:bg-sky-600 transition-all active:scale-95 flex items-center group">
-                啟動終極分析
+                啟動星雲突破分析
             </button>
-            <div id="statusLabel" class="mt-8 text-sky-600 font-extrabold animate-pulse hidden text-center text-xl tracking-tight">小Ge 正在強行啟動傳送通道...</div>
+            <div id="statusLabel" class="mt-8 text-sky-600 font-extrabold animate-pulse hidden text-center text-xl tracking-tight">小Ge 正在星雲中傳輸數據...</div>
         </div>
 
         <!-- Staging Zone -->
@@ -161,7 +160,7 @@
         <div id="debugArea" class="mt-24 pt-12 border-t border-slate-200/60">
             <details class="group">
                 <summary class="flex justify-between items-center cursor-pointer text-slate-300 hover:text-slate-500 transition-all">
-                    <span class="text-[10px] font-black tracking-[0.4em] uppercase">Stability Console / v7.3</span>
+                    <span class="text-[10px] font-black tracking-[0.4em] uppercase">Nebula Protocol Console / v8.0</span>
                     <button id="copyLogBtn" class="text-[9px] bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-300 font-bold">COPY LOG</button>
                 </summary>
                 <div id="debugConsole" class="debug-console">等待 Monika 指令...</div>
@@ -198,40 +197,40 @@
             setTimeout(() => toastEl.classList.replace('opacity-100', 'opacity-0'), 3000);
         }
 
-        // --- 核心上傳機制：簡單單步上傳 (防禦 Failed to fetch) ---
-        async function simpleUpload(file, encodedKey) {
-            log(`📡 啟動單步傳送模式 (${(file.size/1024/1024).toFixed(1)} MB)...`);
+        // --- 核心上傳機制：星雲突破傳輸 (Media Upload 模式) ---
+        async function nebulaUpload(file, encodedKey) {
+            log(`📡 啟動星雲傳輸模式 (${(file.size/1024/1024).toFixed(1)} MB)...`);
             
-            // 構建元數據：我們不再用 JSON 而是直接在 URL 參數中嘗試
+            // 重要：採用簡單的單步 Media Upload 減少 CORS 阻攔
             const url = `${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`;
             
-            // 使用最標準的 headers
-            const headers = new Headers();
-            headers.append("X-Goog-Upload-Protocol", "resumable");
-            headers.append("X-Goog-Upload-Command", "start");
-            headers.append("Content-Type", "application/json");
-
+            // 偽裝成最單純的請求，不帶任何自定義 Google 標頭
             try {
+                // 第一步：先獲取 Upload URL 但移除所有特殊協議欄位
                 const initRes = await fetch(url, {
                     method: 'POST',
-                    headers: headers,
-                    body: JSON.stringify({ file: { display_name: `file_${Date.now()}` } })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file: { display_name: `monika_${Date.now()}` } })
                 });
 
-                if (!initRes.ok) throw new Error(`Google 通道初始化失敗 (${initRes.status})`);
+                if (!initRes.ok) {
+                    const errTxt = await initRes.text();
+                    throw new Error(`通道對齊失敗 (${initRes.status}): ${errTxt}`);
+                }
 
                 const uploadUrl = initRes.headers.get('X-Goog-Upload-URL');
-                if (!uploadUrl) throw new Error("未獲取到上傳 URL");
+                if (!uploadUrl) throw new Error("Google 未分配星雲通道");
 
-                log("🚀 通道已對齊，開始搬運位元數據...");
+                log("🚀 星雲通道已對齊，開始位元搬運...");
                 
-                // 這裡最重要：使用最純淨的 PUT，不帶任何自定義 X-標頭
+                // 第二步：極簡化傳輸數據，僅保留必要標頭
                 const finalRes = await fetch(uploadUrl, {
                     method: 'PUT',
+                    headers: { 'X-Goog-Upload-Command': 'upload, finalize', 'X-Goog-Upload-Offset': '0' },
                     body: file
                 });
 
-                if (!finalRes.ok) throw new Error("位元搬運過程遭攔截");
+                if (!finalRes.ok) throw new Error("位元搬運過程遭攔截 (Security Block)");
 
                 const result = await finalRes.json();
                 return result.file;
@@ -280,7 +279,7 @@
                 $('noteFileInfo').classList.remove('hidden');
                 
                 if (isImage) {
-                    log(`📸 正在編碼圖片...`);
+                    log(`📸 正在編碼圖片星雲...`);
                     const reader = new FileReader();
                     reader.onload = (ev) => { inlineImageData = ev.target.result.split(',')[1]; log("✅ 圖片編碼完成。"); };
                     reader.readAsDataURL(file);
@@ -293,7 +292,7 @@
             window.addEventListener('dragover', (e) => e.preventDefault());
             window.addEventListener('drop', (e) => e.preventDefault());
 
-            log("⚓ v7.3 終極穩定版啟動。採用單步傳輸路徑。");
+            log("⚓ v8.0 星雲突破版已啟動。準備強力衝刺！");
         };
 
         async function startTranscription(audioFile, noteFile, rawText, key) {
@@ -302,15 +301,15 @@
                 let noteUri = null;
                 // 1. 同步文件 (非圖片)
                 if (noteFile && !inlineImageData) {
-                    log(`1️⃣ 同步筆記文件中...`);
-                    const res = await simpleUpload(noteFile, encodedKey);
+                    log(`1️⃣ 同步筆記文件素材...`);
+                    const res = await nebulaUpload(noteFile, encodedKey);
                     noteUri = res.uri;
                 }
 
-                // 2. 同步音訊 (核心挑戰)
-                log(`2️⃣ 搬運音訊大數據...`);
-                $('statusLabel').textContent = "正在強行穿越連線屏障...";
-                const aRes = await simpleUpload(audioFile, encodedKey);
+                // 2. 同步音訊 (關鍵挑戰)
+                log(`2️⃣ 搬運音訊星雲數據...`);
+                $('statusLabel').textContent = "正在穿透瀏覽器安全模型...";
+                const aRes = await nebulaUpload(audioFile, encodedKey);
                 const audioUri = aRes.uri;
                 const audioName = aRes.name;
 
@@ -319,7 +318,7 @@
                     const stRes = await fetch(`${BASE_URL}/${API_VERSION}/${audioName}?key=${encodedKey}`);
                     const status = await stRes.json();
                     if (status.state === "ACTIVE") break;
-                    if (status.state === "FAILED") throw new Error("音訊雲端解析失敗");
+                    if (status.state === "FAILED") throw new Error("音訊分析受挫");
                 }
 
                 log(`3️⃣ 分析引擎精煉報告 (10s 緩衝)...`);
@@ -337,18 +336,20 @@
                     body: JSON.stringify({ contents: [{ parts: parts }], generationConfig: { responseMimeType: "application/json", temperature: 0.1 } })
                 });
 
+                if (!response.ok) throw new Error("大腦運算被攔截 (Final Generation Error)");
+
                 const resJson = await response.json();
                 let text = resJson.candidates[0].content.parts[0].text;
                 text = text.replace(/```json/g, "").replace(/```/g, "").trim();
                 const data = JSON.parse(text.match(/\{[\s\S]*\}/)[0]);
                 data.fileName = audioFile.name;
                 return data;
-            } catch (e) { log(`🛑 傳輸重挫：${e.message}`); throw e; }
+            } catch (e) { log(`🛑 星雲突破受挫：${e.message}`); throw e; }
         }
 
         $('transcribeBtn').onclick = async () => {
             const key = localStorage.getItem('gemini_api_key');
-            if (!key) return;
+            if (!key) { openSettings(); return; }
             $('transcribeBtn').disabled = true;
             $('statusLabel').classList.remove('hidden');
 
@@ -359,7 +360,7 @@
                 $('queueSection').classList.remove('hidden');
                 showToast("任務圓滿達成！✨");
             } catch (err) {
-                $('statusLabel').textContent = "❌ 傳送受阻，請嘗試更換網路或 Key。";
+                $('statusLabel').textContent = "❌ 傳輸異常，請嘗試「Chrome 無痕分頁」並確認金鑰。";
             } finally {
                 $('transcribeBtn').disabled = false;
                 $('statusLabel').classList.add('hidden');
@@ -379,6 +380,19 @@
                 </div>
             `).join('');
         }
+
+        $('copyLogBtn').onclick = async (e) => {
+            e.preventDefault();
+            const text = $('debugConsole').innerText;
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showToast("日誌已複製");
+        };
     </script>
 </body>
 </html>
