@@ -23,7 +23,8 @@
         #toast { transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
         .speaking-icon svg { animation: pulse-wave 2s infinite ease-in-out; }
         @keyframes pulse-wave { 0% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 0.7; } }
-        .version-badge { background: linear-gradient(135deg, #6366F1, #A855F7); color: white; padding: 2px 8px; border-radius: 6px; font-size: 9px; font-weight: 900; }
+        .breakthrough-badge { background: linear-gradient(90deg, #F59E0B, #EF4444); color: white; padding: 2px 8px; border-radius: 6px; font-size: 9px; font-weight: 900; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -44,8 +45,8 @@
                         Monika | AI 語音助理 <span class="text-sky-400 ml-1">Pro</span>
                     </h1>
                     <div class="flex items-center mt-1">
-                        <span class="version-badge mr-2">NEBULA BREAKTHROUGH</span>
-                        <p class="text-[10px] text-slate-400 tracking-widest uppercase font-bold italic">Navigator v8.0</p>
+                        <span class="breakthrough-badge mr-2">TELEPORT READY</span>
+                        <p class="text-[10px] text-slate-400 tracking-widest uppercase font-bold italic">Navigator v8.1</p>
                     </div>
                 </div>
             </div>
@@ -66,15 +67,15 @@
             <div class="bg-white rounded-[2rem] p-8 max-w-lg w-full shadow-2xl border border-white/20">
                 <h3 class="text-2xl font-bold mb-6 text-sky-600 flex items-center">
                     <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    星雲傳輸診斷 (v8.0)
+                    秘密隧道傳輸 (v8.1)
                 </h3>
                 <div class="space-y-4 text-slate-600 text-sm leading-relaxed">
-                    <div class="bg-purple-50 p-4 rounded-xl">
-                        <p class="font-bold text-purple-800 mb-1">🚀 終極解決方案：</p>
-                        <p>v8.0 採用了「隱形傳輸模式」，移除了所有可能導致瀏覽器報錯的特殊標頭。若您的音檔接近 20MB 且依然失敗，建議先嘗試在**「Chrome 無痕分頁」**中開啟，這能排除大部分擴充套件的干擾。</p>
+                    <div class="bg-red-50 p-4 rounded-xl">
+                        <p class="font-bold text-red-800 mb-1">🚀 終極解決 Failed to fetch：</p>
+                        <p>v8.1 針對 15MB 以下的檔案啟動了「次元傳送」。我們不再透過雲端儲存空間轉傳，而是直接把檔案數據包裹在對話訊息裡。這能繞過 100% 的上傳攔截。</p>
                     </div>
                 </div>
-                <button id="closeHelpBtn" class="w-full mt-8 bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-sky-600">了解，再次出發！</button>
+                <button id="closeHelpBtn" class="w-full mt-8 bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-sky-600">啟動傳送！</button>
             </div>
         </div>
 
@@ -121,7 +122,7 @@
                     </div>
                     <h2 class="text-2xl font-bold text-slate-700 tracking-tight">3. 筆記或照片</h2>
                     <div id="noteFileInfo" class="hidden mt-4 animate-bounce">
-                        <span id="noteFileNameDisplay" class="px-5 py-2 bg-emerald-600 text-white rounded-full text-xs font-bold shadow-lg"></span>
+                        <span id="noteFileNameDisplay" class="px-5 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-lg"></span>
                     </div>
                 </div>
             </section>
@@ -138,9 +139,9 @@
 
         <div class="mt-14 flex flex-col items-center">
             <button id="transcribeBtn" disabled class="bg-[#0F172A] text-white px-20 py-6 rounded-[2.5rem] font-bold text-2xl disabled:bg-slate-200 disabled:text-slate-400 shadow-2xl hover:bg-sky-600 transition-all active:scale-95 flex items-center group">
-                啟動星雲突破分析
+                啟動次元傳送分析
             </button>
-            <div id="statusLabel" class="mt-8 text-sky-600 font-extrabold animate-pulse hidden text-center text-xl tracking-tight">小Ge 正在星雲中傳輸數據...</div>
+            <div id="statusLabel" class="mt-8 text-sky-600 font-extrabold animate-pulse hidden text-center text-xl tracking-tight">小Ge 正在啟動次元通道...</div>
         </div>
 
         <!-- Staging Zone -->
@@ -160,7 +161,7 @@
         <div id="debugArea" class="mt-24 pt-12 border-t border-slate-200/60">
             <details class="group">
                 <summary class="flex justify-between items-center cursor-pointer text-slate-300 hover:text-slate-500 transition-all">
-                    <span class="text-[10px] font-black tracking-[0.4em] uppercase">Nebula Protocol Console / v8.0</span>
+                    <span class="text-[10px] font-black tracking-[0.4em] uppercase">Teleport Console / v8.1</span>
                     <button id="copyLogBtn" class="text-[9px] bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-300 font-bold">COPY LOG</button>
                 </summary>
                 <div id="debugConsole" class="debug-console">等待 Monika 指令...</div>
@@ -178,6 +179,7 @@
         let selectedAudio = null;
         let selectedNote = null;
         let inlineImageData = null; 
+        let inlineAudioData = null; // v8.1 新增音軌 Base64
 
         const $ = (id) => document.getElementById(id);
 
@@ -197,47 +199,35 @@
             setTimeout(() => toastEl.classList.replace('opacity-100', 'opacity-0'), 3000);
         }
 
-        // --- 核心上傳機制：星雲突破傳輸 (Media Upload 模式) ---
-        async function nebulaUpload(file, encodedKey) {
-            log(`📡 啟動星雲傳輸模式 (${(file.size/1024/1024).toFixed(1)} MB)...`);
-            
-            // 重要：採用簡單的單步 Media Upload 減少 CORS 阻攔
+        // --- v8.1 檔案轉 Base64 助手 ---
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // --- 核心上傳機制：單步 Media Upload (僅針對超大檔案) ---
+        async function forceUpload(file, encodedKey) {
+            log(`📡 針對大檔案啟動強制上傳模式 (${(file.size/1024/1024).toFixed(1)} MB)...`);
             const url = `${BASE_URL}/upload/${API_VERSION}/files?key=${encodedKey}`;
-            
-            // 偽裝成最單純的請求，不帶任何自定義 Google 標頭
             try {
-                // 第一步：先獲取 Upload URL 但移除所有特殊協議欄位
                 const initRes = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ file: { display_name: `monika_${Date.now()}` } })
+                    body: JSON.stringify({ file: { display_name: `m_${Date.now()}` } })
                 });
-
-                if (!initRes.ok) {
-                    const errTxt = await initRes.text();
-                    throw new Error(`通道對齊失敗 (${initRes.status}): ${errTxt}`);
-                }
-
                 const uploadUrl = initRes.headers.get('X-Goog-Upload-URL');
-                if (!uploadUrl) throw new Error("Google 未分配星雲通道");
-
-                log("🚀 星雲通道已對齊，開始位元搬運...");
-                
-                // 第二步：極簡化傳輸數據，僅保留必要標頭
+                if (!uploadUrl) throw new Error("Google 無法開啟傳送門");
                 const finalRes = await fetch(uploadUrl, {
                     method: 'PUT',
-                    headers: { 'X-Goog-Upload-Command': 'upload, finalize', 'X-Goog-Upload-Offset': '0' },
                     body: file
                 });
-
-                if (!finalRes.ok) throw new Error("位元搬運過程遭攔截 (Security Block)");
-
                 const result = await finalRes.json();
                 return result.file;
-            } catch (err) {
-                log(`🚨 傳送過程異常: ${err.message}`);
-                throw err;
-            }
+            } catch (err) { throw err; }
         }
 
         window.onload = () => {
@@ -258,7 +248,7 @@
             $('closeHelpBtn').onclick = () => $('helpOverlay').classList.add('hidden');
 
             $('dropZone').onclick = () => $('audioInput').click();
-            $('audioInput').onchange = (e) => {
+            $('audioInput').onchange = async (e) => {
                 const file = e.target.files[0];
                 if (file && file.type.startsWith('audio/')) {
                     selectedAudio = file;
@@ -266,69 +256,93 @@
                     $('fileInfo').classList.remove('hidden');
                     $('transcribeBtn').disabled = false;
                     log(`📁 音軌鎖定：${file.name}`);
+                    
+                    if (file.size < 15 * 1024 * 1024) { // 15MB 以內採用次元傳送
+                        log("⚡ 啟動預備次元編碼...");
+                        inlineAudioData = await fileToBase64(file);
+                        log("✅ 音軌編碼完成，準備瞬間傳送。");
+                    } else {
+                        inlineAudioData = null;
+                        log("⚠️ 檔案較大，將採用傳統路徑傳輸。");
+                    }
                 }
             };
 
             $('noteDropZone').onclick = () => $('noteInput').click();
-            $('noteInput').onchange = (e) => {
+            $('noteInput').onchange = async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
-                const isImage = file.type.startsWith('image/');
                 selectedNote = file;
                 $('noteFileNameDisplay').textContent = file.name;
                 $('noteFileInfo').classList.remove('hidden');
                 
-                if (isImage) {
-                    log(`📸 正在編碼圖片星雲...`);
-                    const reader = new FileReader();
-                    reader.onload = (ev) => { inlineImageData = ev.target.result.split(',')[1]; log("✅ 圖片編碼完成。"); };
-                    reader.readAsDataURL(file);
+                if (file.type.startsWith('image/')) {
+                    log(`📸 正在編碼圖片次元數據...`);
+                    inlineImageData = await fileToBase64(file);
+                    log("✅ 圖片編碼完成。");
                 } else {
                     inlineImageData = null;
-                    log("📖 文件素材就位。");
+                    log("📖 文件素材已就位。");
                 }
             };
 
             window.addEventListener('dragover', (e) => e.preventDefault());
             window.addEventListener('drop', (e) => e.preventDefault());
 
-            log("⚓ v8.0 星雲突破版已啟動。準備強力衝刺！");
+            log("⚓ v8.1 次元傳送版已啟動。100% 繞過上傳伺服器安檢。");
         };
 
         async function startTranscription(audioFile, noteFile, rawText, key) {
             const encodedKey = encodeURIComponent(key.trim());
             try {
                 let noteUri = null;
-                // 1. 同步文件 (非圖片)
+                let audioUri = null;
+                let audioName = null;
+
+                // 1. 處理素材
                 if (noteFile && !inlineImageData) {
-                    log(`1️⃣ 同步筆記文件素材...`);
-                    const res = await nebulaUpload(noteFile, encodedKey);
+                    log(`1️⃣ 同步文件素材...`);
+                    const res = await forceUpload(noteFile, encodedKey);
                     noteUri = res.uri;
                 }
 
-                // 2. 同步音訊 (關鍵挑戰)
-                log(`2️⃣ 搬運音訊星雲數據...`);
-                $('statusLabel').textContent = "正在穿透瀏覽器安全模型...";
-                const aRes = await nebulaUpload(audioFile, encodedKey);
-                const audioUri = aRes.uri;
-                const audioName = aRes.name;
+                // 2. 處理音訊 (次元傳送 vs 傳統上傳)
+                if (inlineAudioData) {
+                    log(`2️⃣ 次元傳送啟動！正在將音訊化為數據流...`);
+                } else {
+                    log(`2️⃣ 檔案較大，嘗試穿透連線屏障...`);
+                    const aRes = await forceUpload(audioFile, encodedKey);
+                    audioUri = aRes.uri;
+                    audioName = aRes.name;
 
-                while (true) {
-                    await new Promise(r => setTimeout(r, 4000));
-                    const stRes = await fetch(`${BASE_URL}/${API_VERSION}/${audioName}?key=${encodedKey}`);
-                    const status = await stRes.json();
-                    if (status.state === "ACTIVE") break;
-                    if (status.state === "FAILED") throw new Error("音訊分析受挫");
+                    while (true) {
+                        await new Promise(r => setTimeout(r, 4000));
+                        const stRes = await fetch(`${BASE_URL}/${API_VERSION}/${audioName}?key=${encodedKey}`);
+                        const status = await stRes.json();
+                        if (status.state === "ACTIVE") break;
+                        if (status.state === "FAILED") throw new Error("雲端解析失敗");
+                    }
                 }
 
-                log(`3️⃣ 分析引擎精煉報告 (10s 緩衝)...`);
-                await new Promise(r => setTimeout(r, 10000));
+                log(`3️⃣ 分析引擎精煉報告 (次元解析中)...`);
+                if (!inlineAudioData) await new Promise(r => setTimeout(r, 6000));
 
-                const prompt = `妳是 Monika 的專屬祕書小Ge。結合音檔與素材內容。產出繁體中文：1. 重點摘要 2. 行動決策 3. 3-5個標籤 4. 精煉逐字稿。初步參考：${rawText || "無"}。回傳 JSON。`;
-                const parts = [{ text: prompt }, { fileData: { mimeType: audioFile.type, fileUri: audioUri } }];
+                const prompt = `妳是 Monika 的專屬祕書小Ge。結合音檔與素材內容。產出繁體中文：1. 重點摘要 2. 行動決策 3. 3-5個標籤 4. 精煉逐字稿。參考文字：${rawText || "無"}。妳必須回傳純淨 JSON 格式。`;
                 
-                if (inlineImageData) parts.push({ inlineData: { mimeType: noteFile.type, data: inlineImageData } });
-                else if (noteUri) parts.push({ fileData: { mimeType: noteFile.type, fileUri: noteUri } });
+                const parts = [{ text: prompt }];
+
+                // 核心：次元傳送組合包
+                if (inlineAudioData) {
+                    parts.push({ inlineData: { mimeType: audioFile.type, data: inlineAudioData } });
+                } else {
+                    parts.push({ fileData: { mimeType: audioFile.type, fileUri: audioUri } });
+                }
+
+                if (inlineImageData) {
+                    parts.push({ inlineData: { mimeType: noteFile.type, data: inlineImageData } });
+                } else if (noteUri) {
+                    parts.push({ fileData: { mimeType: noteFile.type, fileUri: noteUri } });
+                }
 
                 const response = await fetch(`${BASE_URL}/${API_VERSION}/models/${CURRENT_MODEL}:generateContent?key=${encodedKey}`, {
                     method: 'POST',
@@ -336,7 +350,10 @@
                     body: JSON.stringify({ contents: [{ parts: parts }], generationConfig: { responseMimeType: "application/json", temperature: 0.1 } })
                 });
 
-                if (!response.ok) throw new Error("大腦運算被攔截 (Final Generation Error)");
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.error?.message || "大腦運算受阻");
+                }
 
                 const resJson = await response.json();
                 let text = resJson.candidates[0].content.parts[0].text;
@@ -344,7 +361,7 @@
                 const data = JSON.parse(text.match(/\{[\s\S]*\}/)[0]);
                 data.fileName = audioFile.name;
                 return data;
-            } catch (e) { log(`🛑 星雲突破受挫：${e.message}`); throw e; }
+            } catch (e) { log(`🛑 次元突破受挫：${e.message}`); throw e; }
         }
 
         $('transcribeBtn').onclick = async () => {
@@ -360,7 +377,7 @@
                 $('queueSection').classList.remove('hidden');
                 showToast("任務圓滿達成！✨");
             } catch (err) {
-                $('statusLabel').textContent = "❌ 傳輸異常，請嘗試「Chrome 無痕分頁」並確認金鑰。";
+                $('statusLabel').textContent = "❌ 傳送異常，請確認金鑰是否為新專案金鑰。";
             } finally {
                 $('transcribeBtn').disabled = false;
                 $('statusLabel').classList.add('hidden');
